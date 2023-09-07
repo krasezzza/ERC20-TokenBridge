@@ -1,11 +1,27 @@
-@import 'variables.scss';
-@import 'mixins.scss';
-@import 'bootstrap.scss';
-@import 'typography.scss';
-@import 'layout.scss';
+@import '_variables.scss';
+@import '_mixins.scss';
+@import '_bootstrap.scss';
+@import '_typography.scss';
+@import '_layout.scss';
+@import 'react-toastify/dist/ReactToastify.css';
 
 .img-profile {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
+}
+
+.logout-icon {
+  color: $primary;
+}
+
+.logout-icon:hover {
+  color: $secondary;
+  cursor: pointer;
+}
+
+.toast-notification {
+  position: fixed;
+  bottom: 85px;
+  right: 15px;
 }

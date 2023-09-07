@@ -1,14 +1,12 @@
-import React from 'react';
-
-const Button = ({
+export default function Button ({
   type = 'primary',
-  children,
-  disabled = false,
   className = '',
-  onClick,
+  disabled = false,
   loading = false,
   loadingText,
-}) => {
+  children,
+  onClick
+}) {
   return (
     <button
       onClick={onClick}
@@ -30,5 +28,3 @@ const Button = ({
     </button>
   );
 };
-
-export default Button;

@@ -1,18 +1,16 @@
-import React from 'react';
+import { NavLink } from 'react-router-dom';
 
-function Footer() {
+export default function Footer() {
   return (
     <div className="footer">
       <p className="text-center">
-        <a target="_blank" rel="noreferrer" href="https://limeacademy.tech/">
+        <NavLink to="/styleguide">
           <img
             src="https://limeacademy.tech/wp-content/uploads/2021/08/limeacademy_logo.svg"
-            alt=""
+            alt="lime-academy-logo-footer"
           />
-        </a>
+        </NavLink>
       </p>
     </div>
   );
-}
-
-export default Footer;
+};

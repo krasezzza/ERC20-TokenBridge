@@ -2,25 +2,27 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-width: 380px;
 }
 
 .header-wrapper {
-  height: 72px;
+  height: 80px;
 }
 
 .header {
   position: fixed;
   z-index: 1;
-  padding: 24px;
+  padding: 24px 24px 18px 24px;
   width: 100%;
   background-color: $light;
 }
 
 .main {
   flex: 1;
+  padding: 0 24px;
 }
 
 .footer {
   background-color: $light;
-  padding: 24px;
+  padding: 18px 24px 24px 24px;
 }
