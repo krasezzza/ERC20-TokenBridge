@@ -83,7 +83,7 @@ if [ -f "./frontend/.env" ];
 then
   echo "frontend/ENV file was previously configured!"
 else
-  cp ./frontend/env.example ./frontend/.env
+  cp ./frontend/.env.example ./frontend/.env
   echo "frontend/ENV file is now configured."
 fi
 echo ""
@@ -93,7 +93,7 @@ if [ -f "./blockchain/.env" ];
 then
   echo "blockchain/ENV file was previously configured!"
 else
-  cp ./blockchain/env.example ./blockchain/.env
+  cp ./blockchain/.env.example ./blockchain/.env
   echo "blockchain/ENV file is now configured."
 fi
 echo ""

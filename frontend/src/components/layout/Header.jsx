@@ -27,13 +27,13 @@ export default function Header() {
   const handleConnect = () => {
     connect();
     setWagmiConnected(true);
-    toast.success('Connected successfully.', { autoClose: 2000 });
+    toast.success('Connected successfully.', { autoClose: 1500 });
   };
 
-  const handleDisconnect = () => {
-    toast.warning('Disconnecting from MetaMask...', { autoClose: 2000 });
-    localStorage.setItem('wagmi.connected', false);
+  const handleDisconnect = async () => {
+    await disconnect();
     setWagmiConnected(false);
+    toast.warning('Disconnecting from MetaMask...', { autoClose: 1500 });
   };
 
   const [ wagmiConnected, setWagmiConnected ] = useState(
@@ -47,9 +47,8 @@ export default function Header() {
           connect();
         } catch (err) {
           console.log(err);
+          toast.error(err.message, { autoClose: 4500 });
         }
-      } else {
-        await disconnect();
       }
     };
     manageConnection();

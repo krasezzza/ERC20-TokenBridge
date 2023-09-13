@@ -2,21 +2,53 @@ import Pagination from 'react-bootstrap/Pagination';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import handleUpdate from '../handles/update';
+import handleFetch from '../handles/fetch';
+import { truncate } from '../utils';
 
 export default function Claim() {
-  const [showModal, setShowModal] = useState(false);
 
-  const handleShowModal = () => setShowModal(true);
-  const handleCloseModal = () => setShowModal(false);
+  const [rerender, setRerender] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [transferRecords, setTransferRecords] = useState([]);
+  const [selectedTransfer, setSelectedTransfer] = useState({});
+
+  const handleShowModal = (selected) => {
+    setSelectedTransfer(selected);
+    setShowModal(true);
+  };
+  const handleCloseModal = () => {
+    setSelectedTransfer({});
+    setShowModal(false);
+  };
+
+  const handleUpdateTransfer = () => {
+    const updatedTransfer = {...selectedTransfer};
+    updatedTransfer.claimed = true;
+    handleUpdate(updatedTransfer);
+    setRerender(true);
+    setShowModal(false);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const results = await handleFetch();
+      setTransferRecords([...results]);
+    };
+
+    fetchData();
+    setRerender(false);
+  }, [rerender]);
 
   return (
     <div className="container my-6 py-3">
-      <h1 className="text-center">Claim Tokens</h1>
+      <h1 className="text-center">Token Claim</h1>
 
-      <Table className="my-6" responsive="sm" hover={true} striped>
+      <Table className="w-75 mx-auto my-6" responsive="sm" hover={true} striped>
         <thead>
-          <tr>
+          <tr className="text-center">
             <th>Source</th>
             <th>Target</th>
             <th>Token</th>
@@ -26,34 +58,53 @@ export default function Claim() {
         </thead>
 
         <tbody>
-          <tr>
-            <td className="align-middle">Sepolia</td>
-            <td className="align-middle">Mumbai</td>
-            <td className="align-middle">wETH</td>
-            <td className="align-middle">4.567</td>
-            <td className="align-middle">
-              <Button 
-                variant="outline-primary" 
-                onClick={handleShowModal}>
-                  Claim
-              </Button>
-            </td>
-          </tr>
+          {
+            transferRecords.map(transfer => (
+              <tr className="text-center align-middle" key={transfer.id}>
+                <td>
+                  <span>{transfer.fromNetwork}</span>
+                  <br />
+                  <span>{truncate(transfer.fromAddress, 9)}</span>
+                </td>
+
+                <td>
+                  <span>{transfer.toNetwork}</span>
+                  <br />
+                  <span>{truncate(transfer.toAddress, 9)}</span>
+                </td>
+
+                <td>{transfer.token}</td>
+
+                <td>{transfer.amount}</td>
+
+                <td>
+                  {transfer.claimed ? (
+                    <Button 
+                      variant="outline-secondary" 
+                      disabled={true}>
+                      Claimed
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="outline-primary" 
+                      onClick={() => handleShowModal(transfer)}>
+                      Claim
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            ))
+          }
         </tbody>
       </Table>
 
       <Pagination className="justify-content-center mt-9">
         <Pagination.First />
         <Pagination.Prev />
-        <Pagination.Item>{1}</Pagination.Item>
-        <Pagination.Ellipsis />
 
-        <Pagination.Item>{11}</Pagination.Item>
-        <Pagination.Item active>{12}</Pagination.Item>
-        <Pagination.Item disabled>{13}</Pagination.Item>
+        <Pagination.Item active>{1}</Pagination.Item>
+        <Pagination.Item disabled>{2}</Pagination.Item>
 
-        <Pagination.Ellipsis />
-        <Pagination.Item>{20}</Pagination.Item>
         <Pagination.Next />
         <Pagination.Last />
       </Pagination>
@@ -65,9 +116,9 @@ export default function Claim() {
 
         <Modal.Body>
           <p>Are you sure you want to claim your token(s):</p>
-          <p>Source Chain: Sepolia</p>
-          <p>Target Chain: Mumbai</p>
-          <p>Amount: 15 wETH</p>
+          <p>Source chain: {selectedTransfer.fromNetwork}</p>
+          <p>Target chain: {selectedTransfer.toNetwork}</p>
+          <p>Token amount: {selectedTransfer.amount} {selectedTransfer.token}</p>
         </Modal.Body>
 
         <Modal.Footer>
@@ -75,7 +126,7 @@ export default function Claim() {
             Cancel
           </Button>
 
-          <Button variant="primary" onClick={handleCloseModal}>
+          <Button variant="primary" onClick={handleUpdateTransfer}>
             Confirm
           </Button>
         </Modal.Footer>

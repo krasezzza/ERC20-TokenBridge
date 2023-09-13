@@ -18,7 +18,7 @@ export default function Home() {
             <h6 className="my-3">Start Bridging</h6>
 
             <NavLink to="/transfer" className="btn btn-primary my-3">
-              Transfer
+              Transfer Page
             </NavLink>
           </div>
         )}
