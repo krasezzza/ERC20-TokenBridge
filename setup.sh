@@ -119,11 +119,11 @@ npm run bccoverage
 echo ""
 sleep 2
 
-if [ -f "./blockchain/artifacts/contracts/BookLibrary.sol/BookLibrary.json" ];
+if [ -f "./blockchain/artifacts/contracts/TokenBridge.sol/TokenBridge.json" ];
 then
   echo "Updating the ABI in the frontend/src/abi folder..."
-  rm ./frontend/src/abi/BookLibrary.json
-  cp ./blockchain/artifacts/contracts/BookLibrary.sol/BookLibrary.json ./frontend/src/abi/
+  rm ./frontend/src/abi/TokenBridge.json
+  cp ./blockchain/artifacts/contracts/TokenBridge.sol/TokenBridge.json ./frontend/src/abi/
   echo ""
   sleep 2
 fi

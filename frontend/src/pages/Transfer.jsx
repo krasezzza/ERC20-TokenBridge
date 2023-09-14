@@ -1,22 +1,26 @@
+import { useNetwork, useAccount } from 'wagmi'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
-import { useNetwork, useAccount } from 'wagmi'
+import { useNavigate  } from 'react-router-dom';
 import { useState } from "react";
 
 import handleSubmit from '../handles/submit';
+import SignMessage from '../components/SignMessage';
 
 export default function Transfer() {
 
   const tokenChoice = {
     "Sepolia": "KRT",
-    "Mumbai": "WKRT"
+    "Goerli": "WKRT"
   };
+  const navigate = useNavigate();
 
   const { chain } = useNetwork();
-  const { address } = useAccount();
+  const { address: accountAddress } = useAccount();
 
   const [showModal, setShowModal] = useState(false);
+  const [signedMessage, setSignedMessage] = useState(false);
   const [targetChain, setTargetChain] = useState({
     networkName: '',
     walletAddress: '',
@@ -32,12 +36,14 @@ export default function Transfer() {
     });
   }
   const handleSubmitTransfer = async () => {
+    console.log("SIGNED MESSAGE:", signedMessage);
+
     const transferDatetime = Date.now();
     const transferDeadline = transferDatetime + 3600;
 
     await handleSubmit({
       fromNetwork: chain.name,
-      fromAddress: address,
+      fromAddress: accountAddress,
       toNetwork: targetChain.networkName,
       toAddress: targetChain.walletAddress,
       token: tokenChoice[chain.name],
@@ -52,8 +58,9 @@ export default function Transfer() {
       walletAddress: '',
       tokenAmount: 0
     });
-
     setShowModal(false);
+
+    navigate('/claim', { replace: true });
   };
 
   const isFormValid = () => {
@@ -62,6 +69,10 @@ export default function Transfer() {
     return !!targetChain.networkName && 
       regexpAddress.test(targetChain.walletAddress) && 
       !!parseInt(targetChain.tokenAmount);
+  };
+
+  const pullData = (data) => {
+    setSignedMessage(data);
   };
 
   return (
@@ -74,12 +85,12 @@ export default function Transfer() {
 
           <Form.Select 
             name="networkName" 
-            value={ targetChain.networkName } 
-            onChange={ handleInputChange }>
+            value={targetChain.networkName} 
+            onChange={handleInputChange}>
 
             <option value="">Select Network</option>
             <option value="Sepolia" disabled={chain.name === "Sepolia"}>Sepolia</option>
-            <option value="Mumbai" disabled={chain.name === "Mumbai"}>Mumbai</option>
+            <option value="Goerli" disabled={chain.name === "Goerli"}>Goerli</option>
 
           </Form.Select>
         </Form.Group>
@@ -90,9 +101,9 @@ export default function Transfer() {
           <Form.Control 
             type="text" 
             name="walletAddress" 
-            value={ targetChain.walletAddress } 
+            value={targetChain.walletAddress} 
             placeholder="Enter Address" 
-            onChange={ handleInputChange } />
+            onChange={handleInputChange} />
         </Form.Group>
 
         <Form.Group className="py-3">
@@ -101,9 +112,9 @@ export default function Transfer() {
           <Form.Control 
             type="number" min="0" 
             name="tokenAmount" 
-            value={ targetChain.tokenAmount } 
+            value={targetChain.tokenAmount} 
             placeholder="Enter Amount" 
-            onChange={ handleInputChange } />
+            onChange={handleInputChange} />
         </Form.Group>
 
         <div className="d-flex justify-content-center align-items-center py-6">
@@ -123,20 +134,29 @@ export default function Transfer() {
         </Modal.Header>
 
         <Modal.Body>
-          <p>Are you sure you want to bridge?</p>
-          <br />
-          <p>Source chain: {chain.name}</p>
-          <p>Target chain: {targetChain.networkName}</p>
-          <p>Token amount: {targetChain.tokenAmount} {tokenChoice[chain.name]}</p>
+          <div className="mt-3 mb-6">
+            <p>Are you sure you want to bridge?</p>
+            <br />
+            <p>Source chain: {chain.name}</p>
+            <p>Target chain: {targetChain.networkName}</p>
+            <p>Token amount: {targetChain.tokenAmount} {tokenChoice[chain.name]}</p>
+          </div>
+
+          <SignMessage signedData={pullData} />
         </Modal.Body>
 
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Cancel
+          <Button 
+            variant="secondary" 
+            onClick={handleCloseModal}>
+              Cancel
           </Button>
 
-          <Button variant="primary" onClick={handleSubmitTransfer}>
-            Confirm
+          <Button 
+            variant="primary" 
+            disabled={accountAddress !== signedMessage?.address} 
+            onClick={handleSubmitTransfer}>
+              Confirm
           </Button>
         </Modal.Footer>
       </Modal>

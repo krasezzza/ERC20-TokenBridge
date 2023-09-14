@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useAccount } from 'wagmi';
 
 export default function Home() {
+
   const { isConnected } = useAccount();
 
   return (

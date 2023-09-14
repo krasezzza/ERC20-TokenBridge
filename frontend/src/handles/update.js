@@ -7,7 +7,7 @@ const handleUpdate = async (data) => {
   
   try {
     await updateDoc(ref, data);
-    toast.success("Transfer successfully updated.", { autoClose: 1500 });
+    toast.success("Transfer updated successfully.", { autoClose: 1500 });
   } catch(err) {
     console.log(err);
     toast.error(err.message, { autoClose: 4500 });

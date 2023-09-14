@@ -7,6 +7,7 @@ const handleSubmit = async (data) => {
   
   try {
     await addDoc(ref, data);
+    toast.success("Transfer send successfully.", { autoClose: 1500 });
   } catch(err) {
     console.log(err);
     toast.error(err.message, { autoClose: 4500 });

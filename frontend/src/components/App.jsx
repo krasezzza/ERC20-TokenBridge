@@ -1,7 +1,7 @@
 import { WagmiConfig, createConfig, configureChains } from 'wagmi';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { infuraProvider } from 'wagmi/providers/infura';
-import { sepolia } from 'wagmi/chains';
+import { sepolia, goerli } from 'wagmi/chains';
 
 import Header from './layout/Header';
 import Footer from './layout/Footer';
@@ -11,12 +11,12 @@ import Transfer from '../pages/Transfer';
 import Claim from '../pages/Claim';
 import Styleguide from '../pages/Styleguide';
 import ProtectedRoute from './ProtectedRoute';
-
 import { ToastContainer } from 'react-toastify';
 
 export default function App() {
+
   const { publicClient, webSocketPublicClient } = configureChains(
-    [sepolia],
+    [sepolia, goerli],
     [infuraProvider({
       apiKey: process.env.REACT_APP_INFURA_API_KEY
     })],

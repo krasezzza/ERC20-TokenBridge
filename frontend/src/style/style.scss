@@ -6,17 +6,19 @@
 @import 'react-toastify/dist/ReactToastify.css';
 
 .img-profile {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
 }
 
+.network-icon,
 .logout-icon {
-  color: $primary;
+  color: $secondary;
 }
 
+.network-icon:hover,
 .logout-icon:hover {
-  color: $secondary;
+  color: $primary;
   cursor: pointer;
 }
 
@@ -24,4 +26,9 @@
   position: fixed;
   bottom: 85px;
   right: 15px;
+}
+
+.spinner-border {
+  width: 22px;
+  height: 22px;
 }
