@@ -9,8 +9,9 @@ import Footer from './layout/Footer';
 import Home from '../pages/Home';
 import Transfer from '../pages/Transfer';
 import Claim from '../pages/Claim';
+import History from '../pages/History';
 import Styleguide from '../pages/Styleguide';
-import ProtectedRoute from './ProtectedRoute';
+import ProtectedRoute from './custom/ProtectedRoute';
 import { ToastContainer } from 'react-toastify';
 
 export default function App() {
@@ -47,6 +48,12 @@ export default function App() {
               <Route path="/claim" element={
                 <ProtectedRoute>
                   <Claim />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/history" element={
+                <ProtectedRoute>
+                  <History />
                 </ProtectedRoute>
               } />
 

@@ -5,8 +5,5 @@ import App from './components/App';
 import './style/style.scss';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+// StrictMode removed because of the components double-rendering
+root.render(<App />);

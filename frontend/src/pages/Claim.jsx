@@ -5,9 +5,9 @@ import Table from 'react-bootstrap/Table';
 import { useEffect, useState } from "react";
 
 import { truncate } from '../utils';
-import handleFetch from '../handles/fetch';
-import handleUpdate from '../handles/update';
-import Loading from "../components/Loading";
+import { toast } from 'react-toastify';
+import { TokenBridgeService } from "../services";
+import Loading from "../components/gui/Loading";
 
 export default function Claim() {
 
@@ -15,21 +15,40 @@ export default function Claim() {
   const [rerender, setRerender] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [transferRecords, setTransferRecords] = useState([]);
-  const [selectedTransfer, setSelectedTransfer] = useState({});
+  const [selectedRecord, setSelectedRecord] = useState({
+    fromNetwork: "",
+    toNetwork: "",
+    tokenAddress: "",
+    tokenSymbol: "",
+    tokenAmount: 0
+  });
 
   const handleShowModal = (selected) => {
-    setSelectedTransfer(selected);
+    setSelectedRecord(selected);
     setShowModal(true);
   };
   const handleCloseModal = () => {
-    setSelectedTransfer({});
+    setSelectedRecord({
+      fromNetwork: "",
+      toNetwork: "",
+      tokenAddress: "",
+      tokenSymbol: "",
+      tokenAmount: 0
+    });
     setShowModal(false);
   };
 
   const handleUpdateTransfer = () => {
-    const updatedTransfer = {...selectedTransfer};
+    const updatedTransfer = {...selectedRecord};
     updatedTransfer.claimed = true;
-    handleUpdate(updatedTransfer);
+
+    TokenBridgeService.claimAmount(updatedTransfer).then(() => {
+      toast.success("Transfer claimed successfully.", { autoClose: 1000 });
+    }).catch((err) => {
+      console.log(err);
+      toast.error(err.message, { autoClose: 4000 });
+    });
+
     setShowModal(false);
     setRerender(true);
   };
@@ -38,8 +57,12 @@ export default function Claim() {
     const fetchData = async () => {
       setIsLoading(true);
 
-      const results = await handleFetch();
-      setTransferRecords([...results]);
+      TokenBridgeService.fetchRecords().then((results) => {
+        setTransferRecords([...results]);
+      }).catch((err) => {
+        console.log(err);
+        toast.error(err.message, { autoClose: 4000 });
+      });
 
       setIsLoading(false);
     };
@@ -59,7 +82,6 @@ export default function Claim() {
                 <th>Source</th>
                 <th>Target</th>
                 <th>Token</th>
-                <th>Amount</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -71,18 +93,20 @@ export default function Claim() {
                     <td>
                       <span>{transfer.fromNetwork}</span>
                       <br />
-                      <span>{truncate(transfer.fromAddress, 9)}</span>
+                      <span>{truncate(transfer.fromWallet, 9)}</span>
                     </td>
 
                     <td>
                       <span>{transfer.toNetwork}</span>
                       <br />
-                      <span>{truncate(transfer.toAddress, 9)}</span>
+                      <span>{truncate(transfer.toWallet, 9)}</span>
                     </td>
 
-                    <td>{transfer.token}</td>
-
-                    <td>{transfer.amount}</td>
+                    <td>
+                      <span>{transfer.tokenAmount} {transfer.tokenSymbol}</span>
+                      <br />
+                      <span>{truncate(transfer.tokenAddress, 9)}</span>
+                    </td>
 
                     <td>
                       {transfer.claimed ? (
@@ -128,9 +152,10 @@ export default function Claim() {
 
         <Modal.Body>
           <p>Are you sure you want to claim your token(s):</p>
-          <p>Source chain: {selectedTransfer.fromNetwork}</p>
-          <p>Target chain: {selectedTransfer.toNetwork}</p>
-          <p>Token amount: {selectedTransfer.amount} {selectedTransfer.token}</p>
+          <p>Source chain: {selectedRecord.fromNetwork}</p>
+          <p>Target chain: {selectedRecord.toNetwork}</p>
+          <p>Token address: {truncate(selectedRecord.tokenAddress, 16)}</p>
+          <p>Token amount: {selectedRecord.tokenAmount} {selectedRecord.tokenSymbol}</p>
         </Modal.Body>
 
         <Modal.Footer>

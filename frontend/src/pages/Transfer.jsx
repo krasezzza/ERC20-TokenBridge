@@ -1,12 +1,14 @@
+import { useNavigate  } from 'react-router-dom';
 import { useNetwork, useAccount } from 'wagmi'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
-import { useNavigate  } from 'react-router-dom';
 import { useState } from "react";
 
-import handleSubmit from '../handles/submit';
-import SignMessage from '../components/SignMessage';
+import { truncate } from '../utils';
+import { toast } from 'react-toastify';
+import { TokenBridgeService } from "../services";
+import SignMessage from '../components/custom/SignMessage';
 
 export default function Transfer() {
 
@@ -20,42 +22,53 @@ export default function Transfer() {
   const { address: accountAddress } = useAccount();
 
   const [showModal, setShowModal] = useState(false);
-  const [signedMessage, setSignedMessage] = useState(false);
-  const [targetChain, setTargetChain] = useState({
+  const [signedMessage, setSignedMessage] = useState(null);
+  const [chainBridge, setChainBridge] = useState({
     networkName: '',
-    walletAddress: '',
+    tokenAddress: '',
     tokenAmount: 0
   });
 
   const handleShowModal = () => setShowModal(true);
-  const handleCloseModal = () => setShowModal(false);
+  const handleCloseModal = () => {
+    setSignedMessage(null);
+    setShowModal(false);
+  };
+
   const handleInputChange = (evt) => {
-    setTargetChain({
-      ...targetChain,
+    setChainBridge({
+      ...chainBridge,
       [evt.target.name]: evt.target.value
     });
   }
-  const handleSubmitTransfer = async () => {
-    console.log("SIGNED MESSAGE:", signedMessage);
 
+  const handleSubmitTransfer = () => {
     const transferDatetime = Date.now();
     const transferDeadline = transferDatetime + 3600;
 
-    await handleSubmit({
+    const createdTransfer = {
+      fromWallet: accountAddress,
       fromNetwork: chain.name,
-      fromAddress: accountAddress,
-      toNetwork: targetChain.networkName,
-      toAddress: targetChain.walletAddress,
-      token: tokenChoice[chain.name],
-      amount: targetChain.tokenAmount,
+      toWallet: accountAddress,
+      toNetwork: chainBridge.networkName,
+      tokenAddress: chainBridge.tokenAddress,
+      tokenSymbol: tokenChoice[chain.name],
+      tokenAmount: chainBridge.tokenAmount,
       timestamp: transferDatetime,
       deadline: transferDeadline,
       claimed: false
+    };
+
+    TokenBridgeService.transferAmount(createdTransfer).then(() => {
+      toast.success("Transfer send successfully.", { autoClose: 1000 });
+    }).catch((err) => {
+      console.log(err);
+      toast.error(err.message, { autoClose: 4000 });
     });
 
-    setTargetChain({
+    setChainBridge({
       networkName: '',
-      walletAddress: '',
+      tokenAddress: '',
       tokenAmount: 0
     });
     setShowModal(false);
@@ -63,12 +76,15 @@ export default function Transfer() {
     navigate('/claim', { replace: true });
   };
 
-  const isFormValid = () => {
-    const regexpAddress = /^0x[a-fA-F0-9]{40}$/g;
+  const isTokenAddress = (address) => {
+    const regexp = /^0x[a-fA-F0-9]{40}$/g;
+    return regexp.test(address);
+  };
 
-    return !!targetChain.networkName && 
-      regexpAddress.test(targetChain.walletAddress) && 
-      !!parseInt(targetChain.tokenAmount);
+  const isFormValid = () => {
+    return !!chainBridge.networkName && 
+      isTokenAddress(chainBridge.tokenAddress) && 
+      !!parseInt(chainBridge.tokenAmount);
   };
 
   const pullData = (data) => {
@@ -81,11 +97,11 @@ export default function Transfer() {
 
       <Form className="w-75 mx-auto my-6">
         <Form.Group className="py-3">
-          <Form.Label>Choose network to bridge to:</Form.Label>
+          <Form.Label>Network to bridge to:</Form.Label>
 
           <Form.Select 
             name="networkName" 
-            value={targetChain.networkName} 
+            value={chainBridge.networkName} 
             onChange={handleInputChange}>
 
             <option value="">Select Network</option>
@@ -96,12 +112,12 @@ export default function Transfer() {
         </Form.Group>
 
         <Form.Group className="py-3">
-          <Form.Label>Choose address:</Form.Label>
+          <Form.Label>Token address:</Form.Label>
 
           <Form.Control 
             type="text" 
-            name="walletAddress" 
-            value={targetChain.walletAddress} 
+            name="tokenAddress" 
+            value={chainBridge.tokenAddress} 
             placeholder="Enter Address" 
             onChange={handleInputChange} />
         </Form.Group>
@@ -112,7 +128,7 @@ export default function Transfer() {
           <Form.Control 
             type="number" min="0" 
             name="tokenAmount" 
-            value={targetChain.tokenAmount} 
+            value={chainBridge.tokenAmount} 
             placeholder="Enter Amount" 
             onChange={handleInputChange} />
         </Form.Group>
@@ -134,15 +150,16 @@ export default function Transfer() {
         </Modal.Header>
 
         <Modal.Body>
-          <div className="mt-3 mb-6">
+          <div className="my-3">
             <p>Are you sure you want to bridge?</p>
             <br />
             <p>Source chain: {chain.name}</p>
-            <p>Target chain: {targetChain.networkName}</p>
-            <p>Token amount: {targetChain.tokenAmount} {tokenChoice[chain.name]}</p>
+            <p>Target chain: {chainBridge.networkName}</p>
+            <p>Token address: {truncate(chainBridge.tokenAddress, 16)}</p>
+            <p>Token amount: {chainBridge.tokenAmount} {tokenChoice[chain.name]}</p>
           </div>
 
-          <SignMessage signedData={pullData} />
+          <SignMessage isVisible={showModal} signedData={pullData} />
         </Modal.Body>
 
         <Modal.Footer>

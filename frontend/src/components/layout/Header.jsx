@@ -1,15 +1,15 @@
 import { useConnect, useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
-import { sepolia, goerli } from 'wagmi/chains';
 import { fetchBalance, disconnect } from '@wagmi/core';
-
+import { sepolia, goerli } from 'wagmi/chains';
 import { useState, useEffect } from 'react';
 import { NavLink } from "react-router-dom";
 import { truncate } from '../../utils';
 import { toast } from 'react-toastify';
-import NetworkSwitch from '../NetworkSwitch';
-import Disconnect from '../Disconnect';
-import Button from '../Button';
+
+import NetworkSwitch from '../gui/NetworkSwitch';
+import Disconnect from '../gui/Disconnect';
+import Button from '../gui/Button';
 
 const md5 = require('md5');
 
@@ -39,13 +39,12 @@ export default function Header() {
   const handleConnect = () => {
     connect();
     setWagmiConnected(true);
-    toast.success('Connected successfully.', { autoClose: 1500 });
   };
 
   const handleDisconnect = async () => {
     await disconnect();
     setWagmiConnected(false);
-    toast.warning('Disconnecting from MetaMask...', { autoClose: 1500 });
+    toast.warning('Disconnecting from MetaMask...', { autoClose: 1000 });
   };
 
   useEffect(() => {
@@ -56,7 +55,7 @@ export default function Header() {
       }).then(res => {
         setWalletBalance(res);
       }).catch(err => {
-        toast.error(err.message, { autoClose: 4500 });
+        toast.error(err.message, { autoClose: 4000 });
       });
     }
     // eslint-disable-next-line
@@ -69,7 +68,7 @@ export default function Header() {
           connect();
         } catch (err) {
           console.log(err);
-          toast.error(err.message, { autoClose: 4500 });
+          toast.error(err.message, { autoClose: 4000 });
         }
       }
     };
@@ -105,12 +104,14 @@ export default function Header() {
           <div className="d-flex">
             {wagmiConnected && !!walletAddress ? (
               <div className="d-block text-end">
-                <img
-                  className="img-profile me-3"
-                  src={`https://www.gravatar.com/avatar/${md5(walletAddress)}/?d=identicon`}
-                  alt="chain-address-logo"
-                />
-                <span>{truncate(walletAddress, 8)}</span>
+                <NavLink to="/history">
+                  <img
+                    className="img-profile me-3"
+                    src={`https://www.gravatar.com/avatar/${md5(walletAddress)}/?d=identicon`}
+                    alt="chain-address-logo"
+                  />
+                  <span>{truncate(walletAddress, 8)}</span>
+                </NavLink>
                 <br />
 
                 <span className="fw-bold">

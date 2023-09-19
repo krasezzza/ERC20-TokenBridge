@@ -1,12 +1,12 @@
-import { WERC20 } from "./../typechain-types/contracts/WERC20";
+import { TokenBridge } from "../typechain-types/contracts/TokenBridge.sol/TokenBridge";
 import { network, ethers } from "hardhat";
 import { expect } from "chai";
 
-let wERC20: WERC20;
+let tokenBridge: TokenBridge;
 let snapshotId: any;
 let initialSnapshotId: any;
 
-describe("WERC20", () => {
+describe("TokenBridge", () => {
   let owner: any;
   let addr1: any;
   let addr2: any;
@@ -15,8 +15,8 @@ describe("WERC20", () => {
   before(async () => {
     [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
 
-    wERC20 = await ethers.deployContract("WERC20");
-    await wERC20.waitForDeployment();
+    tokenBridge = await ethers.deployContract("TokenBridge");
+    await tokenBridge.waitForDeployment();
 
     initialSnapshotId = await network.provider.send('evm_snapshot');
   });
