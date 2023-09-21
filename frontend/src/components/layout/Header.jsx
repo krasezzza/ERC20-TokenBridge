@@ -1,10 +1,10 @@
 import { useConnect, useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
 import { fetchBalance, disconnect } from '@wagmi/core';
+import { truncate, network } from '../../utils';
 import { sepolia, goerli } from 'wagmi/chains';
 import { useState, useEffect } from 'react';
 import { NavLink } from "react-router-dom";
-import { truncate } from '../../utils';
 import { toast } from 'react-toastify';
 
 import NetworkSwitch from '../gui/NetworkSwitch';
@@ -51,10 +51,12 @@ export default function Header() {
     if (!!walletAddress) {
       fetchBalance({ 
         address: walletAddress, 
-        chainId: chain.id 
+        chainId: chain.id,
+        token: network(chain.name).tokenAddress
       }).then(res => {
         setWalletBalance(res);
       }).catch(err => {
+        console.error(err);
         toast.error(err.message, { autoClose: 4000 });
       });
     }
@@ -67,7 +69,7 @@ export default function Header() {
         try {
           connect();
         } catch (err) {
-          console.log(err);
+          console.error(err);
           toast.error(err.message, { autoClose: 4000 });
         }
       }

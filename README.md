@@ -20,13 +20,32 @@ npm run bccompile
 # run the smart contract coverage
 npm run bccoverage
 
-# get help information
-npx hardhat
 
 # deployment tasks
 cd blockchain
+
 npx hardhat deploy-bridge --network {network}
 npx hardhat deploy-token --network {network} --bridge-address {address} --initial-amount {amount} --token-name {name} --token-symbol {symbol}
+
+
+# examples for sepolia
+npx hardhat deploy-bridge --network sepolia
+
+npx hardhat verify --network sepolia 0xd0Ac190AE33af5f23007EEc19504599F1c3aaf68
+
+npx hardhat deploy-token --network sepolia --bridge-address 0xd0Ac190AE33af5f23007EEc19504599F1c3aaf68 --initial-amount 110000000000000000000 --token-name KrasiToken --token-symbol KRT
+
+npx hardhat verify --network sepolia 0x66AF835518bF3b2B1397eCc46B179F7aa7907e16 0xd0Ac190AE33af5f23007EEc19504599F1c3aaf68 110000000000000000000 KrasiToken KRT
+
+
+# examples for goerli
+npx hardhat deploy-bridge --network goerli
+
+npx hardhat verify --network goerli 0xb3A0CAAC0d576FBD7C37F8E3179D478C8083c804
+
+npx hardhat deploy-token --network goerli --bridge-address 0xb3A0CAAC0d576FBD7C37F8E3179D478C8083c804 --initial-amount 1000000000000000000 --token-name WrappedKrasiToken --token-symbol WKRT
+
+npx hardhat verify --network goerli 0xf0fE4ec24C7a0d7164960d007CB326BF168E12E7 0xb3A0CAAC0d576FBD7C37F8E3179D478C8083c804 1000000000000000000 WrappedKrasiToken WKRT
 ```
 
 Please create a ***blockchain/.env*** file as a copy of the ***blockchain/.env.example*** and populate your keys in order to use the deployment task for the testnet correctly.

@@ -45,7 +45,7 @@ export default function Claim() {
     TokenBridgeService.claimAmount(updatedTransfer).then(() => {
       toast.success("Transfer claimed successfully.", { autoClose: 1000 });
     }).catch((err) => {
-      console.log(err);
+      console.error(err);
       toast.error(err.message, { autoClose: 4000 });
     });
 
@@ -60,7 +60,7 @@ export default function Claim() {
       TokenBridgeService.fetchRecords().then((results) => {
         setTransferRecords([...results]);
       }).catch((err) => {
-        console.log(err);
+        console.error(err);
         toast.error(err.message, { autoClose: 4000 });
       });
 
