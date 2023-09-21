@@ -26,11 +26,11 @@ export async function main(
   console.log("WERC20 was deployed to:", wrappedTokenAddress);
   console.log(""); // readable console logging
 
-  // Wait for 5 blocks
+  // Wait for 10 blocks
   let currentBlock = await ethers.provider.getBlockNumber();
-  while (currentBlock + 5 > (await ethers.provider.getBlockNumber())) {
-    await setTimeout(15000);
-    console.log("Waiting for the 5th block confirmation...");
+  while (currentBlock + 10 > (await ethers.provider.getBlockNumber())) {
+    await setTimeout(30000);
+    console.log("Waiting for the 10th block confirmation...");
   }
   console.log(""); // readable console logging
 
@@ -40,7 +40,7 @@ export async function main(
       constructorArguments: [_bridgeAddress, _initialAmount, _tokenName, _tokenSymbol]
     });
   } catch (err: any) {
-    console.log("Please check manually for the verification status on the Etherscan webpage!");
+    console.log(err.message);
     console.log(""); // readable console logging
   }
 

@@ -11,7 +11,7 @@ import Transfer from '../pages/Transfer';
 import Claim from '../pages/Claim';
 import History from '../pages/History';
 import Styleguide from '../pages/Styleguide';
-import ProtectedRoute from './custom/ProtectedRoute';
+import ProtectedRoute from './ProtectedRoute';
 import { ToastContainer } from 'react-toastify';
 
 export default function App() {

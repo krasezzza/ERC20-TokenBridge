@@ -56,7 +56,7 @@ export default function Header() {
       }).then(res => {
         setWalletBalance(res);
       }).catch(err => {
-        console.error(err);
+        console.error(err.message);
         toast.error(err.message, { autoClose: 4000 });
       });
     }
@@ -69,7 +69,7 @@ export default function Header() {
         try {
           connect();
         } catch (err) {
-          console.error(err);
+          console.error(err.message);
           toast.error(err.message, { autoClose: 4000 });
         }
       }

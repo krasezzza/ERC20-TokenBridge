@@ -1,5 +1,5 @@
 import { useNavigate  } from 'react-router-dom';
-import { useNetwork, useAccount } from 'wagmi'
+import { useNetwork, useAccount } from 'wagmi';
 import { fetchToken } from '@wagmi/core';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import { toast } from 'react-toastify';
 import { truncate, network } from '../utils';
 import { TokenBridgeService } from "../services";
-import SignMessage from '../components/custom/SignMessage';
 
 export default function Transfer() {
 
@@ -20,7 +19,6 @@ export default function Transfer() {
   
   const [showModal, setShowModal] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
-  const [signedMessage, setSignedMessage] = useState(null);
   const [chainBridge, setChainBridge] = useState({
     networkName: '',
     tokenAddress: '0x0',
@@ -50,7 +48,6 @@ export default function Transfer() {
     setShowModal(true);
   };
   const handleCloseModal = () => {
-    setSignedMessage(null);
     setShowModal(false);
   };
 
@@ -61,7 +58,7 @@ export default function Transfer() {
     });
   }
 
-  const handleSubmitTransfer = () => {
+  const handleSubmitTransfer = async () => {
     const transferDatetime = Date.now();
     const transferDeadline = transferDatetime + 3600;
 
@@ -78,10 +75,12 @@ export default function Transfer() {
       claimed: false
     };
 
-    TokenBridgeService.transferAmount(createdTransfer).then(() => {
+    const tokenBridgeService = await TokenBridgeService.initialize(chain);
+    await tokenBridgeService.transferAmount(createdTransfer).then(() => {
       toast.success("Transfer send successfully.", { autoClose: 1000 });
+      navigate('/claim', { replace: true });
     }).catch((err) => {
-      console.error(err);
+      console.error(err.message);
       toast.error(err.message, { autoClose: 4000 });
     });
 
@@ -91,8 +90,6 @@ export default function Transfer() {
       tokenAmount: 0
     });
     setShowModal(false);
-
-    navigate('/claim', { replace: true });
   };
 
   const canInputAddress = (address) => {
@@ -128,10 +125,6 @@ export default function Transfer() {
     };
     checkFormValidation();
   }, [chainBridge]);
-
-  const pullData = (data) => {
-    setSignedMessage(data);
-  };
 
   return (
     <div className="container my-6 py-3">
@@ -216,8 +209,6 @@ export default function Transfer() {
             <p>Token supply: {token.totalSupply.formatted} {token.symbol}<br/>
             Token amount: {chainBridge.tokenAmount} {token.symbol}</p>
           </div>
-
-          <SignMessage isVisible={showModal} signedData={pullData} />
         </Modal.Body>
 
         <Modal.Footer>
@@ -229,7 +220,6 @@ export default function Transfer() {
 
           <Button 
             variant="primary" 
-            disabled={accountAddress !== signedMessage?.address} 
             onClick={handleSubmitTransfer}>
               Confirm
           </Button>

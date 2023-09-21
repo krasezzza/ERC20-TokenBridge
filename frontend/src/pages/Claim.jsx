@@ -3,6 +3,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 import { useEffect, useState } from "react";
+import { useNetwork } from 'wagmi';
 
 import { truncate } from '../utils';
 import { toast } from 'react-toastify';
@@ -10,6 +11,8 @@ import { TokenBridgeService } from "../services";
 import Loading from "../components/gui/Loading";
 
 export default function Claim() {
+
+  const { chain } = useNetwork();
 
   const [isLoading, setIsLoading] = useState(false);
   const [rerender, setRerender] = useState(false);
@@ -38,14 +41,15 @@ export default function Claim() {
     setShowModal(false);
   };
 
-  const handleUpdateTransfer = () => {
+  const handleUpdateTransfer = async () => {
     const updatedTransfer = {...selectedRecord};
     updatedTransfer.claimed = true;
 
-    TokenBridgeService.claimAmount(updatedTransfer).then(() => {
+    const tokenBridgeService = await TokenBridgeService.initialize(chain);
+    await tokenBridgeService.claimAmount(updatedTransfer).then(() => {
       toast.success("Transfer claimed successfully.", { autoClose: 1000 });
     }).catch((err) => {
-      console.error(err);
+      console.error(err.message);
       toast.error(err.message, { autoClose: 4000 });
     });
 
@@ -57,18 +61,20 @@ export default function Claim() {
     const fetchData = async () => {
       setIsLoading(true);
 
-      TokenBridgeService.fetchRecords().then((results) => {
+      const tokenBridgeService = await TokenBridgeService.initialize(chain);
+      await tokenBridgeService.fetchRecords().then((results) => {
         setTransferRecords([...results]);
       }).catch((err) => {
-        console.error(err);
+        console.error(err.message);
         toast.error(err.message, { autoClose: 4000 });
       });
 
       setIsLoading(false);
     };
+
     fetchData();
     setRerender(false);
-  }, [rerender]);
+  }, [chain, rerender]);
 
   return (
     <div className="container my-6 py-3">

@@ -121,9 +121,18 @@ sleep 2
 
 if [ -f "./blockchain/artifacts/contracts/TokenBridge.sol/TokenBridge.json" ];
 then
-  echo "Updating the ABI in the frontend/src/abi folder..."
+  echo "Updating the Bridge ABI in the frontend/src/abi folder..."
   rm ./frontend/src/abi/TokenBridge.json
-  cp ./blockchain/artifacts/contracts/TokenBridge.sol/TokenBridge.json ./frontend/src/abi/
+  cp ./blockchain/artifacts/contracts/TokenBridge.sol/TokenBridge.json ./frontend/src/abi/TokenBridge.json
+  echo ""
+  sleep 2
+fi
+
+if [ -f "./blockchain/artifacts/contracts/WERC20.sol/WERC20.json" ];
+then
+  echo "Updating the Token ABI in the frontend/src/abi folder..."
+  rm ./frontend/src/abi/WERC20.json
+  cp ./blockchain/artifacts/contracts/WERC20.sol/WERC20.json ./frontend/src/abi/WERC20.json
   echo ""
   sleep 2
 fi
