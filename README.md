@@ -3,7 +3,7 @@ Solidity/Node/React representation of a token bridge
 
 ```shell
 # configure the project with one command
-bash setup.sh
+bash nodesetup.sh
 
 # start-up the combined development server
 npm run dev
@@ -46,4 +46,4 @@ Please create a ***blockchain/.env*** file as a copy of the ***blockchain/.env.e
 
 Please also create a ***frontend/.env*** file as a copy of the ***frontend/.env.example*** and populate your REACT_APP_ keys in order to connect to the provider and the database successfully.
 
-P.S. the ***setup.sh*** script will create the .env files from the .env.example automatically and you have to populate them with a relevant data :)
+P.S. the ***nodesetup.sh*** script will create the .env files from the .env.example automatically and you have to populate them with a relevant data :)

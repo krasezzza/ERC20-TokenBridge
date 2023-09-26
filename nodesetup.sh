@@ -7,6 +7,14 @@ echo "****************************"
 echo ""
 sleep 2
 
+if [ -d "./node_modules" ];
+then
+  echo "Clearing the 'node_modules' directory..."
+  rm -rf ./node_modules
+  echo ""
+  sleep 1
+fi
+
 if [ -d "./frontend/node_modules" ];
 then
   echo "Clearing the 'frontend/node_modules' directory..."
@@ -19,14 +27,6 @@ if [ -d "./blockchain/node_modules" ];
 then
   echo "Clearing the 'blockchain/node_modules' directory..."
   rm -rf ./blockchain/node_modules
-  echo ""
-  sleep 1
-fi
-
-if [ -d "./node_modules" ];
-then
-  echo "Clearing the 'node_modules' directory..."
-  rm -rf ./node_modules
   echo ""
   sleep 1
 fi
@@ -71,6 +71,14 @@ then
   sleep 1
 fi
 
+if [ -f "./package-lock.json" ];
+then
+  echo "Clearing the 'package-lock.json' file..."
+  rm -f ./package-lock.json
+  echo ""
+  sleep 1
+fi
+
 if [ -f "./frontend/package-lock.json" ];
 then
   echo "Clearing the 'frontend/package-lock.json' file..."
@@ -83,14 +91,6 @@ if [ -f "./blockchain/package-lock.json" ];
 then
   echo "Clearing the 'blockchain/package-lock.json' file..."
   rm -f ./blockchain/package-lock.json
-  echo ""
-  sleep 1
-fi
-
-if [ -f "./package-lock.json" ];
-then
-  echo "Clearing the 'package-lock.json' file..."
-  rm -f ./package-lock.json
   echo ""
   sleep 1
 fi
@@ -115,6 +115,11 @@ fi
 echo ""
 sleep 1
 
+echo "Installing node_modules..."
+npm install
+echo ""
+sleep 2
+
 echo "Installing frontend/node_modules..."
 npm install --prefix frontend
 echo ""
@@ -122,11 +127,6 @@ sleep 2
 
 echo "Installing blockchain/node_modules..."
 npm install --prefix blockchain
-echo ""
-sleep 2
-
-echo "Installing node_modules..."
-npm install
 echo ""
 sleep 2
 
