@@ -15,11 +15,12 @@ export async function main(_privateKey: string) {
   console.log("TokenBridge was deployed to:", tokenBridgeAddress);
   console.log(""); // readable console logging
 
-  // Wait for 10 blocks
+  // Wait for n blocks
+  const targetBlocks = 12;
   let currentBlock = await ethers.provider.getBlockNumber();
-  while (currentBlock + 10 > (await ethers.provider.getBlockNumber())) {
+  while (currentBlock + targetBlocks > (await ethers.provider.getBlockNumber())) {
     await setTimeout(30000);
-    console.log("Waiting for the 10th block confirmation...");
+    console.log(`Waiting for ${targetBlocks} block confirmations...`);
   }
   console.log(""); // readable console logging
 
