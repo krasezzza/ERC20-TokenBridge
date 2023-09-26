@@ -4,6 +4,13 @@ export function truncate(str, n) {
     : str;
 }
 
+export function capitalize(str) {
+  if (str.length) {
+    return str[0].toUpperCase() + str.slice(1);
+  }
+  return '';
+}
+
 export function formattedAmount(amount) {
   // eslint-disable-next-line no-undef
   return BigInt(amount) * 1000000000000000000n;

@@ -1,15 +1,17 @@
-import Pagination from 'react-bootstrap/Pagination';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
+
 import { useNavigate  } from 'react-router-dom';
 import { useEffect, useState } from "react";
+import { toast } from 'react-toastify';
 import { useNetwork } from 'wagmi';
 
-import { truncate } from '../utils';
-import { toast } from 'react-toastify';
 import { TokenBridgeService } from "../services";
+import { capitalize, truncate } from '../utils';
 import Loading from "../components/gui/Loading";
+import ItemsPagination from "../components/gui/ItemsPagination";
+
 
 export default function Claim() {
 
@@ -19,6 +21,7 @@ export default function Claim() {
   const [isLoading, setIsLoading] = useState(false);
   const [rerender, setRerender] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [currentPageItems, setCurrentPageItems] = useState([]);
   const [transferRecords, setTransferRecords] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState({
     fromNetwork: "",
@@ -44,18 +47,21 @@ export default function Claim() {
   };
 
   const handleUpdateTransfer = async () => {
+    setIsLoading(true);
+
     const updatedTransfer = {...selectedRecord};
     updatedTransfer.claimed = true;
 
     const tokenBridgeService = await TokenBridgeService.initialize(chain);
     await tokenBridgeService.claimAmount(updatedTransfer).then(() => {
-      toast.success("Transfer claimed successfully.", { autoClose: 1000 });
+      toast.success("Transfer claimed successfully.", { autoClose: 1500 });
       navigate('/claim', { replace: true });
     }).catch((err) => {
       console.error(err.message);
-      toast.error(err.message, { autoClose: 4000 });
+      toast.error(err.message.split('"')[1], { autoClose: 4000 });
     });
 
+    setIsLoading(false);
     setShowModal(false);
     setRerender(true);
   };
@@ -69,7 +75,7 @@ export default function Claim() {
         setTransferRecords([...results]);
       }).catch((err) => {
         console.error(err.message);
-        toast.error(err.message, { autoClose: 4000 });
+        toast.error(err.message.split('"')[1], { autoClose: 4000 });
       });
 
       setIsLoading(false);
@@ -78,6 +84,10 @@ export default function Claim() {
     fetchData();
     setRerender(false);
   }, [chain, rerender]);
+
+  const handleCallback = (items) => {
+    setCurrentPageItems(items);
+  };
 
   return (
     <div className="container my-6 py-3">
@@ -96,17 +106,17 @@ export default function Claim() {
             </thead>
 
             <tbody>
-              {transferRecords.length ? (
-                transferRecords.map(transfer => (
+              {currentPageItems.length ? (
+                currentPageItems.map(transfer => (
                   <tr className="text-center align-middle" key={transfer.id}>
                     <td>
-                      <span>{transfer.fromNetwork}</span>
+                      <span>{capitalize(transfer.fromNetwork)}</span>
                       <br />
                       <span>{truncate(transfer.fromWallet, 9)}</span>
                     </td>
 
                     <td>
-                      <span>{transfer.toNetwork}</span>
+                      <span>{capitalize(transfer.toNetwork)}</span>
                       <br />
                       <span>{truncate(transfer.toWallet, 9)}</span>
                     </td>
@@ -136,43 +146,45 @@ export default function Claim() {
                 ))
               ) : (
                 <tr className="text-center align-middle">
-                  <td colSpan={5}>No records currently.</td>
+                  <td colSpan={4}>No records currently.</td>
                 </tr>
               )}
             </tbody>
           </Table>
 
-          <Pagination className="justify-content-center mt-9">
-            <Pagination.First />
-            <Pagination.Prev />
-
-            <Pagination.Item active>{1}</Pagination.Item>
-
-            <Pagination.Next />
-            <Pagination.Last />
-          </Pagination>
+          <ItemsPagination 
+            records={transferRecords} 
+            setPageItemsCallback={handleCallback} />
         </div>
       )}
 
-      <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
+      <Modal show={showModal} onHide={handleCloseModal} backdrop="static">
+        <Modal.Header>
           <Modal.Title>Please Confirm</Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
-          <p>Are you sure you want to claim your token(s):</p>
-          <p>Source chain: {selectedRecord.fromNetwork}</p>
-          <p>Target chain: {selectedRecord.toNetwork}</p>
-          <p>Token address: {truncate(selectedRecord.tokenAddress, 16)}</p>
-          <p>Token amount: {selectedRecord.tokenAmount} {selectedRecord.tokenSymbol}</p>
-        </Modal.Body>
-
+        {isLoading ? (<Loading />) : (
+          <Modal.Body>
+            <p>Are you sure you want to claim your token(s):</p>
+            <p>Source chain: {capitalize(selectedRecord.fromNetwork)}</p>
+            <p>Target chain: {capitalize(selectedRecord.toNetwork)}</p>
+            <p>Token address: {truncate(selectedRecord.tokenAddress, 16)}</p>
+            <p>Token amount: {selectedRecord.tokenAmount} {selectedRecord.tokenSymbol}</p>
+          </Modal.Body>
+        )}
+        
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
+          <Button 
+            variant="secondary" 
+            disabled={isLoading}
+            onClick={handleCloseModal}>
             Cancel
           </Button>
 
-          <Button variant="primary" onClick={handleUpdateTransfer}>
+          <Button 
+            variant="primary" 
+            disabled={isLoading}
+            onClick={handleUpdateTransfer}>
             Confirm
           </Button>
         </Modal.Footer>

@@ -6,9 +6,11 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { useEffect, useState } from "react";
 
-import { toast } from 'react-toastify';
+import { capitalize, truncate, networkProps } from '../utils';
 import { TokenBridgeService } from "../services";
-import { truncate, networkProps } from '../utils';
+import Loading from "../components/gui/Loading";
+import { toast } from 'react-toastify';
+
 
 export default function Transfer() {
 
@@ -17,6 +19,7 @@ export default function Transfer() {
   const { chain } = useNetwork();
   const { address: accountAddress } = useAccount();
   
+  const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [chainBridge, setChainBridge] = useState({
@@ -59,12 +62,14 @@ export default function Transfer() {
   }
 
   const handleSubmitTransfer = async () => {
+    setIsLoading(true);
+
     const transferDatetime = Date.now();
     const transferDeadline = transferDatetime + 3600;
 
     const createdTransfer = {
       fromWallet: accountAddress,
-      fromNetwork: chain.name,
+      fromNetwork: chain.network,
       toWallet: accountAddress,
       toNetwork: chainBridge.networkName,
       tokenAddress: chainBridge.tokenAddress,
@@ -77,13 +82,14 @@ export default function Transfer() {
 
     const tokenBridgeService = await TokenBridgeService.initialize(chain);
     await tokenBridgeService.transferAmount(createdTransfer).then(() => {
-      toast.success("Transfer send successfully.", { autoClose: 1000 });
+      toast.success("Transfer send successfully.", { autoClose: 1500 });
       navigate('/claim', { replace: true });
     }).catch((err) => {
       console.error(err.message);
-      toast.error(err.message, { autoClose: 4000 });
+      toast.error(err.message.split('"')[1], { autoClose: 4000 });
     });
 
+    setIsLoading(false);
     setChainBridge({
       networkName: '',
       tokenAddress: '0x0',
@@ -140,8 +146,8 @@ export default function Transfer() {
             onChange={handleInputChange}>
 
             <option value="">Select Network</option>
-            <option value="Sepolia" disabled={chain?.name === "Sepolia"}>Sepolia</option>
-            <option value="Goerli" disabled={chain?.name === "Goerli"}>Goerli</option>
+            <option value="sepolia" disabled={chain?.network === "sepolia"}>Sepolia</option>
+            <option value="goerli" disabled={chain?.network === "goerli"}>Goerli</option>
 
           </Form.Select>
         </Form.Group>
@@ -192,34 +198,38 @@ export default function Transfer() {
         </div>
       </Form>
 
-      <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
+      <Modal show={showModal} onHide={handleCloseModal} backdrop="static">
+        <Modal.Header>
           <Modal.Title>Please Confirm</Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
-          <div className="my-3">
-            <p>Are you sure you want to bridge?</p>
-            <br />
-            <p>Source chain: {chain?.name}</p>
-            <p>Target chain: {chainBridge.networkName}</p>
-            {chainBridge.tokenAddress && (
-              <p>Token address: {truncate(chainBridge.tokenAddress, 16)}</p>
-            )}
-            <p>Token supply: {token.totalSupply.formatted} {token.symbol}<br/>
-            Token amount: {chainBridge.tokenAmount} {token.symbol}</p>
-          </div>
-        </Modal.Body>
+        {isLoading ? (<Loading />) : (
+          <Modal.Body>
+            <div className="my-3">
+              <p>Are you sure you want to bridge?</p>
+              <br />
+              <p>Source chain: {capitalize(chain?.network)}</p>
+              <p>Target chain: {capitalize(chainBridge.networkName)}</p>
+              {chainBridge.tokenAddress && (
+                <p>Token address: {truncate(chainBridge.tokenAddress, 16)}</p>
+              )}
+              <p>Token supply: {token.totalSupply.formatted} {token.symbol}<br/>
+              Token amount: {chainBridge.tokenAmount} {token.symbol}</p>
+            </div>
+          </Modal.Body>
+        )}
 
         <Modal.Footer>
           <Button 
             variant="secondary" 
+            disabled={isLoading}
             onClick={handleCloseModal}>
               Cancel
           </Button>
 
           <Button 
             variant="primary" 
+            disabled={isLoading}
             onClick={handleSubmitTransfer}>
               Confirm
           </Button>

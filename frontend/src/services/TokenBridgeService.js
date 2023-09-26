@@ -1,4 +1,4 @@
-import { doc, addDoc, updateDoc, getDocs, collection } from "firebase/firestore";
+import { doc, addDoc, updateDoc, getDocs, collection, query, where, orderBy } from "firebase/firestore";
 import { Contract, BrowserProvider, formatEther } from 'ethers';
 import { networkProps, formattedAmount } from '../utils';
 import firestore from "../firebase";
@@ -43,9 +43,38 @@ class TokenBridgeService {
 
   async fetchRecords() {
     let records = [];
-    const transfersCollection = collection(firestore, "transfers");
 
-    await getDocs(transfersCollection).then((recs) => {
+    const transfersCollection = collection(firestore, "transfers");
+    const dbQuery = query(
+      transfersCollection,
+      where("toNetwork", "==", this.currentChain.name)
+    );
+
+    await getDocs(dbQuery).then((recs) => {
+      recs.forEach((record) => {
+        records.push({
+          ...record.data(),
+          id: record.id
+        });
+      });
+    });
+
+    return records;
+  }
+
+  async fetchClaimedRecords() {
+    let records = [];
+
+    const transfersCollection = collection(firestore, "transfers");
+    const dbQuery = query(
+      transfersCollection,
+      where("claimed", "==", true),
+      where("fromWallet", "==", this.signerAddress),
+      where("toWallet", "==", this.signerAddress),
+      orderBy("timestamp", "desc")
+    );
+
+    await getDocs(dbQuery).then((recs) => {
       recs.forEach((record) => {
         records.push({
           ...record.data(),
@@ -60,11 +89,6 @@ class TokenBridgeService {
   async transferAmount(data) {
     let successResponse = false;
 
-    let signerBalance = await this._getBalance(this.signerAddress);
-    console.log("Signer balance before TRANSFER is:", signerBalance);
-    let bridgeBalance = await this._getBalance(this.bridgeAddress);
-    console.log("Bridge balance before TRANSFER is:", bridgeBalance);
-
     const tokenAmountFormatted = formattedAmount(data.tokenAmount);
 
     const signedData = await signaturePermit(
@@ -77,7 +101,12 @@ class TokenBridgeService {
     );
 
     if (this.currentChain.name === 'sepolia') {
-      console.log("Executing on Sepolia testnet...");
+      let signerBalance = await this._getBalance(this.signerAddress);
+      console.log("SENDER balance before TRANSFER:", signerBalance);
+      let bridgeBalance = await this._getBalance(this.bridgeAddress);
+      console.log("BRIDGE balance before TRANSFER:", bridgeBalance);
+
+      console.log(`LockAmount(${data.tokenAmount} ${data.tokenSymbol}) on SEPOLIA...`);
 
       successResponse = await this._lockAmount({
         tokenAddress: this.tokenAddress,
@@ -87,10 +116,15 @@ class TokenBridgeService {
         s: signedData.s,
         v: signedData.v
       });
+
+      signerBalance = await this._getBalance(this.signerAddress);
+      console.log("SENDER balance after TRANSFER:", signerBalance);
+      bridgeBalance = await this._getBalance(this.bridgeAddress);
+      console.log("BRIDGE balance after TRANSFER:", bridgeBalance);
     }
 
     if (this.currentChain.name === 'goerli') {
-      console.log("Executing on Goerli testnet...");
+      console.log(`BurnAmount(${data.tokenAmount} ${data.tokenSymbol}) on GOERLI...`);
 
       successResponse = await this._burnAmount({
         tokenAddress: this.tokenAddress,
@@ -101,11 +135,6 @@ class TokenBridgeService {
         v: signedData.v
       });
     }
-
-    signerBalance = await this._getBalance(this.signerAddress);
-    console.log("Signer balance after TRANSFER is:", signerBalance);
-    bridgeBalance = await this._getBalance(this.bridgeAddress);
-    console.log("Bridge balance after TRANSFER is:", bridgeBalance);
 
     if (successResponse) {
       const ref = collection(firestore, "transfers");
@@ -118,35 +147,35 @@ class TokenBridgeService {
   async claimAmount(data) {
     let successResponse = false;
 
-    let signerBalance = await this._getBalance(this.signerAddress);
-    console.log("Signer balance before CLAIM is:", signerBalance);
-    let bridgeBalance = await this._getBalance(this.bridgeAddress);
-    console.log("Bridge balance before CLAIM is:", bridgeBalance);
-
     const tokenAmountFormatted = formattedAmount(data.tokenAmount);
 
     if (this.currentChain.name === 'sepolia') {
-      console.log("Executing on Sepolia testnet...");
+      let signerBalance = await this._getBalance(this.signerAddress);
+      console.log("SENDER balance before CLAIM:", signerBalance);
+      let bridgeBalance = await this._getBalance(this.bridgeAddress);
+      console.log("BRIDGE balance before CLAIM:", bridgeBalance);
+
+      console.log(`UnlockAmount(${data.tokenAmount} ${data.tokenSymbol}) on SEPOLIA...`);
 
       successResponse = await this._unlockAmount({
         tokenAddress: this.tokenAddress,
         tokenAmount: tokenAmountFormatted
       });
+
+      signerBalance = await this._getBalance(this.signerAddress);
+      console.log("SENDER balance after CLAIM:", signerBalance);
+      bridgeBalance = await this._getBalance(this.bridgeAddress);
+      console.log("BRIDGE balance after CLAIM:", bridgeBalance);
     }
 
     if (this.currentChain.name === 'goerli') {
-      console.log("Executing on Goerli testnet...");
+      console.log(`MintAmount(${data.tokenAmount} ${data.tokenSymbol}) on GOERLI...`);
 
       successResponse = await this._mintAmount({
         tokenAddress: this.tokenAddress,
         tokenAmount: tokenAmountFormatted
       });
     }
-
-    signerBalance = await this._getBalance(this.signerAddress);
-    console.log("Signer balance after CLAIM is:", signerBalance);
-    bridgeBalance = await this._getBalance(this.bridgeAddress);
-    console.log("Bridge balance after CLAIM is:", bridgeBalance);
 
     if (successResponse) {
       const ref = doc(firestore, "transfers", data.id);

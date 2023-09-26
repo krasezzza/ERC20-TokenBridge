@@ -1,7 +1,9 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 
+
 export default function Styleguide() {
+
   return (
     <div className="container my-5">
       <h1>Styleguide</h1>

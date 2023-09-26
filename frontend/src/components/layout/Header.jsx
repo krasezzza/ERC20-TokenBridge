@@ -119,7 +119,7 @@ export default function Header() {
                 <br />
 
                 <span className="fw-bold mx-1">
-                  {Number(walletBalance.formatted).toFixed(0)}
+                  {Number(walletBalance.formatted).toFixed(1)}
                 </span>
                 <span className="fw-bold mx-1">
                   {walletBalance.symbol}
