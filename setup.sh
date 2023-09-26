@@ -23,6 +23,14 @@ then
   sleep 1
 fi
 
+if [ -d "./node_modules" ];
+then
+  echo "Clearing the 'node_modules' directory..."
+  rm -rf ./node_modules
+  echo ""
+  sleep 1
+fi
+
 if [ -d "./blockchain/artifacts" ];
 then
   echo "Clearing the 'blockchain/artifacts' directory..."
@@ -79,6 +87,14 @@ then
   sleep 1
 fi
 
+if [ -f "./package-lock.json" ];
+then
+  echo "Clearing the 'package-lock.json' file..."
+  rm -f ./package-lock.json
+  echo ""
+  sleep 1
+fi
+
 if [ -f "./frontend/.env" ];
 then
   echo "frontend/ENV file was previously configured!"
@@ -109,13 +125,18 @@ npm install --prefix blockchain
 echo ""
 sleep 2
 
+echo "Installing node_modules..."
+npm install
+echo ""
+sleep 2
+
 echo "Compiling the typechain data..."
-npm run bccompile
+npm run bc-compile
 echo ""
 sleep 2
 
 echo "Running the hardhat test coverage..."
-npm run bccoverage
+npm run bc-coverage
 echo ""
 sleep 2
 
@@ -137,7 +158,7 @@ then
   sleep 2
 fi
 
-echo "Starting up the frontend dev server..."
-npm run festart
+echo "Starting up the concurrently dev server..."
+npm run dev
 echo ""
 sleep 2

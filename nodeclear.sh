@@ -38,3 +38,19 @@ then
   echo ""
   sleep 1
 fi
+
+if [ -d "./node_modules" ];
+then
+  echo "Clearing the 'node_modules' directory..."
+  rm -rf ./node_modules
+  echo ""
+  sleep 1
+fi
+
+if [ -f "./package-lock.json" ];
+then
+  echo "Clearing the 'package-lock.json' file..."
+  rm -f ./package-lock.json
+  echo ""
+  sleep 1
+fi

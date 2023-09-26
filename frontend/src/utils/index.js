@@ -4,22 +4,29 @@ export function truncate(str, n) {
     : str;
 }
 
-export function network(chainName) {
+export function formattedAmount(amount) {
+  // eslint-disable-next-line no-undef
+  return BigInt(amount) * 1000000000000000000n;
+}
+
+export function networkProps(chainName) {
   const networkConfig = {
-    'Sepolia': {
-      providerUrl: `${process.env.REACT_APP_SEPOLIA_PROVIDER_URL}${process.env.REACT_APP_INFURA_API_KEY}`,
+    'hardhat': {
+      bridgeAddress: process.env.REACT_APP_LOCALNODE_BRIDGE_ADDRESS,
+      tokenAddress: process.env.REACT_APP_LOCALNODE_TOKEN_ADDRESS
+    },
+    'sepolia': {
       bridgeAddress: process.env.REACT_APP_SEPOLIA_BRIDGE_ADDRESS,
       tokenAddress: process.env.REACT_APP_SEPOLIA_TOKEN_ADDRESS
     },
-    'Goerli': {
-      providerUrl: `${process.env.REACT_APP_GOERLI_PROVIDER_URL}${process.env.REACT_APP_INFURA_API_KEY}`,
+    'goerli': {
       bridgeAddress: process.env.REACT_APP_GOERLI_BRIDGE_ADDRESS,
       tokenAddress: process.env.REACT_APP_GOERLI_TOKEN_ADDRESS
     },
   };
 
   if (!chainName) {
-    return networkConfig['Sepolia'];
+    return networkConfig['sepolia'];
   }
 
   return networkConfig[chainName];

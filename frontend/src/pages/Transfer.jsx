@@ -7,8 +7,8 @@ import Form from 'react-bootstrap/Form';
 import { useEffect, useState } from "react";
 
 import { toast } from 'react-toastify';
-import { truncate, network } from '../utils';
 import { TokenBridgeService } from "../services";
+import { truncate, networkProps } from '../utils';
 
 export default function Transfer() {
 
@@ -34,9 +34,9 @@ export default function Transfer() {
 
   useEffect(() => {
     const getTokenData = async () => {
-      if (!!chain?.name) {
+      if (!!chain?.network) {
         const tokenData = await fetchToken({
-          address: network(chain.name).tokenAddress,
+          address: networkProps(chain.network).tokenAddress,
         });
         setToken(tokenData);
       }

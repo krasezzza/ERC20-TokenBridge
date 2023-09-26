@@ -1,6 +1,6 @@
 {
-  "name": "erctwenty-tokenbridge",
-  "version": "0.1.0",
+  "name": "erctwenty-tokenbridge-fe",
+  "version": "1.5.0",
   "private": true,
   "scripts": {
     "build": "react-scripts build",

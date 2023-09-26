@@ -1,5 +1,6 @@
-import { WagmiConfig, createConfig, configureChains } from 'wagmi';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { WagmiConfig, createConfig, configureChains } from 'wagmi';
+import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
 import { infuraProvider } from 'wagmi/providers/infura';
 import { sepolia, goerli } from 'wagmi/chains';
 
@@ -18,9 +19,17 @@ export default function App() {
 
   const { publicClient, webSocketPublicClient } = configureChains(
     [sepolia, goerli],
-    [infuraProvider({
-      apiKey: process.env.REACT_APP_INFURA_API_KEY
-    })],
+    [
+      infuraProvider({
+        apiKey: process.env.REACT_APP_INFURA_API_KEY
+      }),
+      // in case of using it on the hardhat local node
+      jsonRpcProvider({
+        rpc: () => ({
+          http: process.env.REACT_APP_LOCALNODE_PROVIDER_URL,
+        })
+      })
+    ],
   );
 
   const config = createConfig({

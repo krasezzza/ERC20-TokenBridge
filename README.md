@@ -5,20 +5,23 @@ Solidity/Node/React representation of a token bridge
 # configure the project with one command
 bash setup.sh
 
+# start-up the combined development server
+npm run dev
+
 # start-up the frontend development server
-npm run festart
+npm run fe-start
 
 # start-up the local hardhat network
-npm run bcstart
+npm run bc-start
 
 # run the smart contract tests
-npm run bctest
+npm run bc-test
 
 # run the smart contract compile
-npm run bccompile
+npm run bc-compile
 
 # run the smart contract coverage
-npm run bccoverage
+npm run bc-coverage
 
 
 # deployment tasks
@@ -27,11 +30,12 @@ cd blockchain
 npx hardhat deploy-bridge --network {network}
 npx hardhat deploy-token --network {network} --bridge-address {address} --initial-amount {amount} --token-name {name} --token-symbol {symbol}
 
+# examples for localhost
+npx hardhat deploy-local
 
 # examples for sepolia
 npx hardhat deploy-bridge --network sepolia
 npx hardhat deploy-token --network sepolia --bridge-address 0x4B7b42A9aEfbD700d35a789De8CA700Cf19002C3 --initial-amount 110000000000000000000 --token-name KrasiToken --token-symbol KRT
-
 
 # examples for goerli
 npx hardhat deploy-bridge --network goerli

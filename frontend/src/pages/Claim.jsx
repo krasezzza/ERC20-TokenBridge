@@ -2,6 +2,7 @@ import Pagination from 'react-bootstrap/Pagination';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
+import { useNavigate  } from 'react-router-dom';
 import { useEffect, useState } from "react";
 import { useNetwork } from 'wagmi';
 
@@ -12,6 +13,7 @@ import Loading from "../components/gui/Loading";
 
 export default function Claim() {
 
+  const navigate = useNavigate();
   const { chain } = useNetwork();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +50,7 @@ export default function Claim() {
     const tokenBridgeService = await TokenBridgeService.initialize(chain);
     await tokenBridgeService.claimAmount(updatedTransfer).then(() => {
       toast.success("Transfer claimed successfully.", { autoClose: 1000 });
+      navigate('/claim', { replace: true });
     }).catch((err) => {
       console.error(err.message);
       toast.error(err.message, { autoClose: 4000 });

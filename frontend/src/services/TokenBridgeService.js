@@ -1,8 +1,9 @@
 import { doc, addDoc, updateDoc, getDocs, collection } from "firebase/firestore";
-import { Contract, BrowserProvider, formatEther, verifyMessage } from 'ethers';
+import { Contract, BrowserProvider, formatEther } from 'ethers';
+import { networkProps, formattedAmount } from '../utils';
 import firestore from "../firebase";
-import { network } from '../utils';
 
+import signaturePermit from "./SignaturePermitService";
 import TokenBridge from "../abi/TokenBridge.json";
 import WERC20 from "../abi/WERC20.json";
 
@@ -10,6 +11,7 @@ class TokenBridgeService {
 
   constructor(config) {
     this.provider = config.provider;
+    this.currentChain = config.currentChain;
 
     this.signerAddress = config.signerAddress;
     this.bridgeAddress = config.bridgeAddress;
@@ -21,14 +23,22 @@ class TokenBridgeService {
 
   static async initialize(chain) {
     const provider = new BrowserProvider(window.ethereum);
+    const currentChain = await provider.getNetwork();
 
     const signer = await provider.getSigner();
     const signerAddress = await signer.getAddress();
 
-    const bridgeAddress = network(chain.name).bridgeAddress;
-    const tokenAddress = network(chain.name).tokenAddress;
+    const bridgeAddress = networkProps(chain.network).bridgeAddress;
+    const tokenAddress = networkProps(chain.network).tokenAddress;
 
-    return new TokenBridgeService({ provider, signer, signerAddress, bridgeAddress, tokenAddress });
+    return new TokenBridgeService({ 
+      provider, 
+      currentChain,
+      signer, 
+      signerAddress, 
+      bridgeAddress, 
+      tokenAddress 
+    });
   }
 
   async fetchRecords() {
@@ -38,8 +48,8 @@ class TokenBridgeService {
     await getDocs(transfersCollection).then((recs) => {
       recs.forEach((record) => {
         records.push({
-          id: record.id,
-          ...record.data()
+          ...record.data(),
+          id: record.id
         });
       });
     });
@@ -49,63 +59,53 @@ class TokenBridgeService {
 
   async transferAmount(data) {
     let successResponse = false;
-    let signedData = null;
 
-    try {
-      const message = "Programmatically signed message.";
-      signedData = await this.signGivenMessage(message);
-      successResponse = this.verifySignedMessage(signedData);
-    } catch (err) {
-      throw new Error("Message verification rejected!");
+    let signerBalance = await this._getBalance(this.signerAddress);
+    console.log("Signer balance before TRANSFER is:", signerBalance);
+    let bridgeBalance = await this._getBalance(this.bridgeAddress);
+    console.log("Bridge balance before TRANSFER is:", bridgeBalance);
+
+    const tokenAmountFormatted = formattedAmount(data.tokenAmount);
+
+    const signedData = await signaturePermit(
+      this.signerAddress,
+      this.bridgeAddress,
+      tokenAmountFormatted,
+      this.tokenContract,
+      this.provider,
+      data.deadline
+    );
+
+    if (this.currentChain.name === 'sepolia') {
+      console.log("Executing on Sepolia testnet...");
+
+      successResponse = await this._lockAmount({
+        tokenAddress: this.tokenAddress,
+        tokenAmount: tokenAmountFormatted,
+        deadline: data.deadline,
+        r: signedData.r,
+        s: signedData.s,
+        v: signedData.v
+      });
     }
 
-    let signerBalance = await this.getBalance(this.signerAddress);
-    console.log("Signer balance before operation is:", signerBalance);
-    let bridgeBalance = await this.getBalance(this.bridgeAddress);
-    console.log("Bridge balance before operation is:", bridgeBalance);
+    if (this.currentChain.name === 'goerli') {
+      console.log("Executing on Goerli testnet...");
 
-    if (successResponse && signedData) {
-      const currentChain = await this.provider.getNetwork();
-
-      if (currentChain.name === 'sepolia') {
-        console.log("Executing on Sepolia testnet...");
-  
-        try {
-          const lockAmountTx = await this.bridgeContract.lockAmount(
-            this.tokenAddress,
-            data.tokenAmount,
-            data.deadline,
-            signedData.signature
-          );
-          const lockAmountReceipt = await lockAmountTx.wait();
-          successResponse = lockAmountReceipt.status === 1;
-        } catch (err) {
-          throw new Error(err.message.split('(')[0]);
-        }
-      }
-  
-      if (currentChain.name === 'goerli') {
-        console.log("Executing on Goerli testnet...");
-  
-        try {
-          const burnAmountTx = await this.bridgeContract.burnAmount(
-            this.tokenAddress,
-            data.tokenAmount,
-            data.deadline,
-            signedData.signature
-          );
-          const burnAmountReceipt = await burnAmountTx.wait();
-          successResponse = burnAmountReceipt.status === 1;
-        } catch (err) {
-          throw new Error(err.message.split('(')[0]);
-        }
-      }
+      successResponse = await this._burnAmount({
+        tokenAddress: this.tokenAddress,
+        tokenAmount: tokenAmountFormatted,
+        deadline: data.deadline,
+        r: signedData.r,
+        s: signedData.s,
+        v: signedData.v
+      });
     }
 
-    signerBalance = await this.getBalance(this.signerAddress);
-    console.log("Signer balance after operation is:", signerBalance);
-    bridgeBalance = await this.getBalance(this.bridgeAddress);
-    console.log("Bridge balance after operation is:", bridgeBalance);
+    signerBalance = await this._getBalance(this.signerAddress);
+    console.log("Signer balance after TRANSFER is:", signerBalance);
+    bridgeBalance = await this._getBalance(this.bridgeAddress);
+    console.log("Bridge balance after TRANSFER is:", bridgeBalance);
 
     if (successResponse) {
       const ref = collection(firestore, "transfers");
@@ -118,47 +118,35 @@ class TokenBridgeService {
   async claimAmount(data) {
     let successResponse = false;
 
-    let signerBalance = await this.getBalance(this.signerAddress);
-    console.log("Signer balance before operation is:", signerBalance);
-    let bridgeBalance = await this.getBalance(this.bridgeAddress);
-    console.log("Bridge balance before operation is:", bridgeBalance);
+    let signerBalance = await this._getBalance(this.signerAddress);
+    console.log("Signer balance before CLAIM is:", signerBalance);
+    let bridgeBalance = await this._getBalance(this.bridgeAddress);
+    console.log("Bridge balance before CLAIM is:", bridgeBalance);
 
-    const currentChain = await this.provider.getNetwork();
+    const tokenAmountFormatted = formattedAmount(data.tokenAmount);
 
-    if (currentChain.name === 'sepolia') {
+    if (this.currentChain.name === 'sepolia') {
       console.log("Executing on Sepolia testnet...");
 
-      try {
-        const unlockAmountTx = await this.bridgeContract.unlockAmount(
-          this.tokenAddress,
-          data.tokenAmount,
-        );
-        const unlockAmountReceipt = await unlockAmountTx.wait();
-        successResponse = unlockAmountReceipt.status === 1;
-      } catch (err) {
-        throw new Error(err.message.split('(')[0]);
-      }
+      successResponse = await this._unlockAmount({
+        tokenAddress: this.tokenAddress,
+        tokenAmount: tokenAmountFormatted
+      });
     }
 
-    if (currentChain.name === 'goerli') {
+    if (this.currentChain.name === 'goerli') {
       console.log("Executing on Goerli testnet...");
 
-      try {
-        const mintAmountTx = await this.bridgeContract.mintAmount(
-          this.tokenAddress,
-          data.tokenAmount,
-        );
-        const mintAmountReceipt = await mintAmountTx.wait();
-        successResponse = mintAmountReceipt.status === 1;
-      } catch (err) {
-        throw new Error(err.message.split('(')[0]);
-      }
+      successResponse = await this._mintAmount({
+        tokenAddress: this.tokenAddress,
+        tokenAmount: tokenAmountFormatted
+      });
     }
 
-    signerBalance = await this.getBalance(this.signerAddress);
-    console.log("Signer balance after operation is:", signerBalance);
-    bridgeBalance = await this.getBalance(this.bridgeAddress);
-    console.log("Bridge balance after operation is:", bridgeBalance);
+    signerBalance = await this._getBalance(this.signerAddress);
+    console.log("Signer balance after CLAIM is:", signerBalance);
+    bridgeBalance = await this._getBalance(this.bridgeAddress);
+    console.log("Bridge balance after CLAIM is:", bridgeBalance);
 
     if (successResponse) {
       const ref = doc(firestore, "transfers", data.id);
@@ -168,26 +156,73 @@ class TokenBridgeService {
     throw new Error("The given amount could not be claimed!");
   }
 
-  async getBalance(address) {
+  async _lockAmount(params) {
+    try {
+      const lockAmountTx = await this.bridgeContract.lockAmount(
+        params.tokenAddress,
+        params.tokenAmount,
+        params.deadline,
+        params.r,
+        params.s,
+        params.v
+      );
+      const lockAmountReceipt = await lockAmountTx.wait();
+
+      return lockAmountReceipt.status === 1;
+    } catch (err) {
+      throw new Error(err.message.split('(')[0]);
+    }
+  }
+
+  async _burnAmount(params) {
+    try {
+      const burnAmountTx = await this.bridgeContract.burnAmount(
+        params.tokenAddress,
+        params.tokenAmount,
+        params.deadline,
+        params.r,
+        params.s,
+        params.v
+      );
+      const burnAmountReceipt = await burnAmountTx.wait();
+
+      return burnAmountReceipt.status === 1;
+    } catch (err) {
+      throw new Error(err.message.split('(')[0]);
+    }
+  }
+
+  async _unlockAmount(params) {
+    try {
+      const unlockAmountTx = await this.bridgeContract.unlockAmount(
+        params.tokenAddress,
+        params.tokenAmount
+      );
+      const unlockAmountReceipt = await unlockAmountTx.wait();
+
+      return unlockAmountReceipt.status === 1;
+    } catch (err) {
+      throw new Error(err.message.split('(')[0]);
+    }
+  }
+
+  async _mintAmount(params) {
+    try {
+      const mintAmountTx = await this.bridgeContract.mintAmount(
+        params.tokenAddress,
+        params.tokenAmount
+      );
+      const mintAmountReceipt = await mintAmountTx.wait();
+
+      return mintAmountReceipt.status === 1;
+    } catch (err) {
+      throw new Error(err.message.split('(')[0]);
+    }
+  }
+
+  async _getBalance(address) {
     const balance = await this.tokenContract.balanceOf(address);
     return formatEther(balance);
-  }
-
-  async signGivenMessage(message) {
-    const signer = await this.provider.getSigner();
-    const address = await signer.getAddress();
-    const signature = await signer.signMessage(message);
-    
-    return { message, address, signature };
-  }
-
-  verifySignedMessage({ message, address, signature }) {
-    const signerAddress = verifyMessage(message, signature);
-
-    if (signerAddress !== address) {
-      return false;
-    }
-    return true;
   }
 }
 

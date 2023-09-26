@@ -1,12 +1,12 @@
 import { useConnect, useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
 import { fetchBalance, disconnect } from '@wagmi/core';
-import { truncate, network } from '../../utils';
 import { sepolia, goerli } from 'wagmi/chains';
+import { useLocation , NavLink } from "react-router-dom";
 import { useState, useEffect } from 'react';
-import { NavLink } from "react-router-dom";
 import { toast } from 'react-toastify';
 
+import { truncate, networkProps } from '../../utils';
 import NetworkSwitch from '../gui/NetworkSwitch';
 import Disconnect from '../gui/Disconnect';
 import Button from '../gui/Button';
@@ -23,6 +23,7 @@ export default function Header() {
     },
   });
 
+  const location = useLocation();
   const { chain } = useNetwork();
   const { chains, switchNetwork } = useSwitchNetwork();
   const { connect, isLoading } = useConnect({ connector });
@@ -52,16 +53,16 @@ export default function Header() {
       fetchBalance({ 
         address: walletAddress, 
         chainId: chain.id,
-        token: network(chain.name).tokenAddress
+        token: networkProps(chain.network).tokenAddress
       }).then(res => {
         setWalletBalance(res);
       }).catch(err => {
         console.error(err.message);
-        toast.error(err.message, { autoClose: 4000 });
+        toast.error(err.message.split('\n')[0], { autoClose: 4000 });
       });
     }
     // eslint-disable-next-line
-  }, [chain?.id, walletAddress]);
+  }, [chain?.id, walletAddress, location]);
 
   useEffect(() => {
     const manageConnection = async () => {
@@ -114,17 +115,22 @@ export default function Header() {
                   />
                   <span>{truncate(walletAddress, 8)}</span>
                 </NavLink>
+
                 <br />
 
-                <span className="fw-bold">
-                  {Number(walletBalance?.formatted).toFixed(3)} {walletBalance?.symbol}
+                <span className="fw-bold mx-1">
+                  {Number(walletBalance.formatted).toFixed(0)}
                 </span>
+                <span className="fw-bold mx-1">
+                  {walletBalance.symbol}
+                </span>
+
                 <span className="ps-2">|</span>
 
                 {chains.map((newChain) => {
                   return newChain.id !== chain?.id && (
                     <span className="network-icon ms-3" 
-                      key={newChain.id}
+                      key={newChain.id} 
                       onClick={() => switchNetwork?.(newChain.id)} 
                       title={`Switch to ${newChain.name}`}>
                         <NetworkSwitch />

@@ -1,15 +1,19 @@
 {
   "name": "erctwenty-tokenbridge",
-  "version": "1.0.0",
-  "description": "Solidity/Node/React project visualizing how a token bridge may work.",
-  "main": "index.js",
+  "version": "1.1.0",
+  "description": "Solidity/Node/React representation of a token bridge",
   "author": "Krasimir Tsvetanov",
   "license": "ISC",
   "scripts": {
-    "festart": "npm start --prefix frontend",
-    "bcstart": "npm run start --prefix blockchain",
-    "bctest": "npm run test --prefix blockchain",
-    "bccompile": "npm run compile --prefix blockchain",
-    "bccoverage": "npm run coverage --prefix blockchain"
+    "bc-deploy-local": "npm run deploy-local --prefix blockchain",
+    "bc-coverage": "npm run coverage --prefix blockchain",
+    "bc-compile": "npm run compile --prefix blockchain",
+    "bc-start": "npm run start --prefix blockchain",
+    "bc-test": "npm run test --prefix blockchain",
+    "fe-start": "npm start --prefix frontend",
+    "dev": "concurrently --kill-others-on-fail 'npm run bc-start' 'sleep 6 && npm run bc-deploy-local' 'sleep 12 && npm run fe-start'"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.1"
   }
 }

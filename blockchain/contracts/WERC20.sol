@@ -18,32 +18,13 @@ contract WERC20 is Ownable, ERC20, ERC20Permit {
     transferOwnership(_bridgeAddress);
   }
 
-  function mintToken(
-    address _to,
-    uint256 _amount
-  ) public onlyOwner {
+  function mintToken(address _to, uint256 _amount) public onlyOwner {
 
     _mint(_to, _amount);
   }
 
-  function burnToken(
-    address _from,
-    uint256 _amount
-  ) public {
+  function burnToken(address _from, uint256 _amount) public {
 
     _burn(_from, _amount);
-  }
-
-  function permitAction(
-    address owner,
-    address spender,
-    uint256 value,
-    uint256 deadline,
-    uint8 v,
-    bytes32 r,
-    bytes32 s
-  ) public {
-
-    permit(owner, spender, value, deadline, v, r, s);
   }
 }
