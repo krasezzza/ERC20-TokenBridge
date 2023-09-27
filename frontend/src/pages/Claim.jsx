@@ -1,16 +1,17 @@
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import Table from 'react-bootstrap/Table';
-
 import { useNavigate  } from 'react-router-dom';
 import { useEffect, useState } from "react";
 import { toast } from 'react-toastify';
 import { useNetwork } from 'wagmi';
 
-import { TokenBridgeService } from "../services";
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import Table from 'react-bootstrap/Table';
+
+import ItemsPagination from "../components/gui/ItemsPagination";
 import { capitalize, truncate } from '../utils';
 import Loading from "../components/gui/Loading";
-import ItemsPagination from "../components/gui/ItemsPagination";
+import { ValidationService } from "../services";
+import { BridgeService } from "../services";
 
 
 export default function Claim() {
@@ -52,13 +53,18 @@ export default function Claim() {
     const updatedTransfer = {...selectedRecord};
     updatedTransfer.claimed = true;
 
-    const tokenBridgeService = await TokenBridgeService.initialize(chain);
-    await tokenBridgeService.claimAmount(updatedTransfer).then(() => {
+    const bridgeService = new BridgeService(chain.network);
+    const validationService = new ValidationService();
+
+    await bridgeService.claimAmount(
+      validationService, 
+      updatedTransfer
+    ).then(() => {
       toast.success("Transfer claimed successfully.", { autoClose: 1500 });
       navigate('/claim', { replace: true });
     }).catch((err) => {
       console.error(err.message);
-      toast.error(err.message.split('"')[1], { autoClose: 4000 });
+      toast.error(capitalize(err.message), { autoClose: 4000 });
     });
 
     setIsLoading(false);
@@ -70,12 +76,13 @@ export default function Claim() {
     const fetchData = async () => {
       setIsLoading(true);
 
-      const tokenBridgeService = await TokenBridgeService.initialize(chain);
-      await tokenBridgeService.fetchRecords().then((results) => {
+      const bridgeService = new BridgeService(chain.network);
+
+      await bridgeService.fetchTransferRecords().then((results) => {
         setTransferRecords([...results]);
       }).catch((err) => {
         console.error(err.message);
-        toast.error(err.message.split('"')[1], { autoClose: 4000 });
+        toast.error(err.message, { autoClose: 4000 });
       });
 
       setIsLoading(false);
@@ -83,6 +90,7 @@ export default function Claim() {
 
     fetchData();
     setRerender(false);
+    // eslint-disable-next-line
   }, [chain, rerender]);
 
   const handleCallback = (items) => {
@@ -160,7 +168,7 @@ export default function Claim() {
 
       <Modal show={showModal} onHide={handleCloseModal} backdrop="static">
         <Modal.Header>
-          <Modal.Title>Please Confirm</Modal.Title>
+          <Modal.Title className="user-select-none">Please Confirm</Modal.Title>
         </Modal.Header>
 
         {isLoading ? (<Loading />) : (

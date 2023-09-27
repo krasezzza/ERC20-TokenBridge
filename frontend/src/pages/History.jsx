@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from 'react-toastify';
 import { useNetwork } from 'wagmi';
 
-import { TokenBridgeService } from "../services";
+import { BridgeService } from "../services";
 import { capitalize, truncate } from '../utils';
 import Loading from "../components/gui/Loading";
 import ItemsPagination from "../components/gui/ItemsPagination";
@@ -22,18 +22,20 @@ export default function History() {
     const fetchData = async () => {
       setIsLoading(true);
 
-      const tokenBridgeService = await TokenBridgeService.initialize(chain);
-      await tokenBridgeService.fetchClaimedRecords().then((results) => {
+      const bridgeService = new BridgeService(chain.network);
+
+      await bridgeService.fetchClaimedRecords().then((results) => {
         setTransferRecords([...results]);
       }).catch((err) => {
         console.error(err.message);
-        toast.error(err.message.split('"')[1], { autoClose: 4000 });
+        toast.error(err.message, { autoClose: 4000 });
       });
 
       setIsLoading(false);
     };
 
     fetchData();
+    // eslint-disable-next-line
   }, [chain]);
 
   const handleCallback = (items) => {

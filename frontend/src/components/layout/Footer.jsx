@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 export default function Footer() {
 
   return (
-    <div className="footer">
+    <div className="footer user-select-none">
       <p className="text-center">
         <NavLink to="/styleguide">
           <img

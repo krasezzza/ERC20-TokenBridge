@@ -19,14 +19,17 @@ export function formattedAmount(amount) {
 export function networkProps(chainName) {
   const networkConfig = {
     'hardhat': {
+      providerUrl: process.env.REACT_APP_LOCALNODE_PROVIDER_URL,
       bridgeAddress: process.env.REACT_APP_LOCALNODE_BRIDGE_ADDRESS,
       tokenAddress: process.env.REACT_APP_LOCALNODE_TOKEN_ADDRESS
     },
     'sepolia': {
+      providerUrl: `${process.env.REACT_APP_SEPOLIA_PROVIDER_URL}${process.env.REACT_APP_INFURA_API_KEY}`,
       bridgeAddress: process.env.REACT_APP_SEPOLIA_BRIDGE_ADDRESS,
       tokenAddress: process.env.REACT_APP_SEPOLIA_TOKEN_ADDRESS
     },
     'goerli': {
+      providerUrl: `${process.env.REACT_APP_GOERLI_PROVIDER_URL}${process.env.REACT_APP_INFURA_API_KEY}`,
       bridgeAddress: process.env.REACT_APP_GOERLI_BRIDGE_ADDRESS,
       tokenAddress: process.env.REACT_APP_GOERLI_TOKEN_ADDRESS
     },

@@ -1,15 +1,18 @@
-import { useNavigate  } from 'react-router-dom';
 import { useNetwork, useAccount } from 'wagmi';
 import { fetchToken } from '@wagmi/core';
+import { useNavigate  } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { toast } from 'react-toastify';
+
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
-import { useEffect, useState } from "react";
 
 import { capitalize, truncate, networkProps } from '../utils';
-import { TokenBridgeService } from "../services";
 import Loading from "../components/gui/Loading";
-import { toast } from 'react-toastify';
+import { ValidationService } from "../services";
+import { BridgeService } from "../services";
+import { PermitService } from "../services";
 
 
 export default function Transfer() {
@@ -80,13 +83,20 @@ export default function Transfer() {
       claimed: false
     };
 
-    const tokenBridgeService = await TokenBridgeService.initialize(chain);
-    await tokenBridgeService.transferAmount(createdTransfer).then(() => {
+    const bridgeService = new BridgeService(chain.network);
+    const validationService = new ValidationService();
+
+    await bridgeService.transferAmount(
+      PermitService, 
+      validationService, 
+      createdTransfer
+    ).then(() => {
       toast.success("Transfer send successfully.", { autoClose: 1500 });
+      toast.warning("Switch networks for token claim!", { autoClose: 4500 });
       navigate('/claim', { replace: true });
     }).catch((err) => {
       console.error(err.message);
-      toast.error(err.message.split('"')[1], { autoClose: 4000 });
+      toast.error(err.message, { autoClose: 4000 });
     });
 
     setIsLoading(false);
@@ -200,7 +210,7 @@ export default function Transfer() {
 
       <Modal show={showModal} onHide={handleCloseModal} backdrop="static">
         <Modal.Header>
-          <Modal.Title>Please Confirm</Modal.Title>
+          <Modal.Title className="user-select-none">Please Confirm</Modal.Title>
         </Modal.Header>
 
         {isLoading ? (<Loading />) : (
