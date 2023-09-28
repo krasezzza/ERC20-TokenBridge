@@ -7,7 +7,7 @@ export default function Home() {
   const { isConnected } = useAccount();
 
   return (
-    <div className="container pt-8">
+    <div className="container pt-6">
       <h1 className="text-center">ERC20 Token Bridge</h1>
 
       <div className="content-wrapper text-center">

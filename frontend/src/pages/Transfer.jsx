@@ -1,4 +1,4 @@
-import { useNetwork, useAccount } from 'wagmi';
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
 import { fetchToken } from '@wagmi/core';
 import { useNavigate  } from 'react-router-dom';
 import { useEffect, useState } from "react";
@@ -20,6 +20,7 @@ export default function Transfer() {
   const navigate = useNavigate();
 
   const { chain } = useNetwork();
+  const { chains } = useSwitchNetwork();
   const { address: accountAddress } = useAccount();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -92,11 +93,11 @@ export default function Transfer() {
       createdTransfer
     ).then(() => {
       toast.success("Transfer send successfully.", { autoClose: 1500 });
-      toast.warning("Switch networks for token claim!", { autoClose: 4500 });
-      navigate('/claim', { replace: true });
+      toast.warning("Switch networks for token claim!", { autoClose: 3500 });
+      navigate('/', { replace: true });
     }).catch((err) => {
       console.error(err.message);
-      toast.error(err.message, { autoClose: 4000 });
+      toast.error(capitalize(err.message.split(' (')[0]), { autoClose: 4000 });
     });
 
     setIsLoading(false);
@@ -143,11 +144,11 @@ export default function Transfer() {
   }, [chainBridge]);
 
   return (
-    <div className="container pt-8">
-      <h1 className="text-center">Token Transfer</h1>
+    <div className="container pt-6">
+      <h1 className="text-center">Transfer Tokens</h1>
 
       <div className="content-wrapper">
-        <Form className="w-75 mx-auto my-6">
+        <Form className="w-75 mx-auto mt-6">
           <Form.Group className="py-3">
             <Form.Label>Network to bridge to:</Form.Label>
 
@@ -157,8 +158,16 @@ export default function Transfer() {
               onChange={handleInputChange}>
 
               <option value="">Select Network</option>
-              <option value="sepolia" disabled={chain?.network === "sepolia"}>Sepolia</option>
-              <option value="goerli" disabled={chain?.network === "goerli"}>Goerli</option>
+              {chains.map((chainItem) => {
+                return (
+                  <option 
+                    key={chainItem.id} 
+                    value={chainItem.network} 
+                    disabled={chainItem.network === chain?.network}>
+                      {chainItem.name}
+                  </option>
+                );
+              })}
 
             </Form.Select>
           </Form.Group>
@@ -225,8 +234,8 @@ export default function Transfer() {
               {chainBridge.tokenAddress && (
                 <p>Token address: {truncate(chainBridge.tokenAddress, 16)}</p>
               )}
-              <p>Token supply: {token.totalSupply.formatted} {token.symbol}<br/>
-              Token amount: {chainBridge.tokenAmount} {token.symbol}</p>
+              <p>Token supply: {token.totalSupply.formatted} {token.symbol}</p>
+              <p>Token amount: {chainBridge.tokenAmount} {token.symbol}</p>
             </div>
           </Modal.Body>
         )}

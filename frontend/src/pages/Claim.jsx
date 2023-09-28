@@ -61,10 +61,10 @@ export default function Claim() {
       updatedTransfer
     ).then(() => {
       toast.success("Transfer claimed successfully.", { autoClose: 1500 });
-      navigate('/claim', { replace: true });
+      navigate('/history', { replace: true });
     }).catch((err) => {
       console.error(err.message);
-      toast.error(capitalize(err.message), { autoClose: 4000 });
+      toast.error(capitalize(err.message.split(' (')[0]), { autoClose: 4000 });
     });
 
     setIsLoading(false);
@@ -76,7 +76,7 @@ export default function Claim() {
     const fetchData = async () => {
       setIsLoading(true);
 
-      const bridgeService = new BridgeService(chain.network);
+      const bridgeService = new BridgeService(chain?.network);
 
       await bridgeService.fetchTransferRecords().then((results) => {
         setTransferRecords([...results]);
@@ -91,24 +91,24 @@ export default function Claim() {
     fetchData();
     setRerender(false);
     // eslint-disable-next-line
-  }, [chain, rerender]);
+  }, [chain, rerender, transferRecords.length]);
 
   const handleCallback = (items) => {
     setCurrentPageItems(items);
   };
 
   return (
-    <div className="container pt-8">
-      <h1 className="text-center">Token Claim</h1>
+    <div className="container pt-6">
+      <h1 className="text-center">Claim Tokens</h1>
 
       {isLoading ? (<Loading />) : (
         <div className="content-wrapper">
           <Table className="w-75 mx-auto mt-6 mb-3" responsive="sm" hover={true} striped>
             <thead>
               <tr className="text-center">
+                <th>Token</th>
                 <th>Source</th>
                 <th>Target</th>
-                <th>Token</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -117,6 +117,12 @@ export default function Claim() {
               {currentPageItems.length ? (
                 currentPageItems.map(transfer => (
                   <tr className="text-center align-middle" key={transfer.id}>
+                    <td>
+                      <span>{transfer.tokenAmount} {transfer.tokenSymbol}</span>
+                      <br />
+                      <span>{truncate(transfer.tokenAddress, 9)}</span>
+                    </td>
+
                     <td>
                       <span>{capitalize(transfer.fromNetwork)}</span>
                       <br />
@@ -127,12 +133,6 @@ export default function Claim() {
                       <span>{capitalize(transfer.toNetwork)}</span>
                       <br />
                       <span>{truncate(transfer.toWallet, 9)}</span>
-                    </td>
-
-                    <td>
-                      <span>{transfer.tokenAmount} {transfer.tokenSymbol}</span>
-                      <br />
-                      <span>{truncate(transfer.tokenAddress, 9)}</span>
                     </td>
 
                     <td>
@@ -180,7 +180,7 @@ export default function Claim() {
             <p>Token amount: {selectedRecord.tokenAmount} {selectedRecord.tokenSymbol}</p>
           </Modal.Body>
         )}
-        
+
         <Modal.Footer>
           <Button 
             variant="secondary" 

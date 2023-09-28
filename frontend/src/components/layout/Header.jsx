@@ -2,7 +2,8 @@ import { useConnect, useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
 import { fetchBalance, disconnect } from '@wagmi/core';
 import { sepolia, goerli } from 'wagmi/chains';
-import { useLocation , NavLink } from "react-router-dom";
+
+import { useLocation, useNavigate, NavLink } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
@@ -23,10 +24,11 @@ export default function Header() {
     },
   });
 
+  const navigate = useNavigate();
   const location = useLocation();
   const { chain } = useNetwork();
-  const { chains, switchNetwork } = useSwitchNetwork();
-  const { connect, isLoading } = useConnect({ connector });
+  const { chains, switchNetworkAsync } = useSwitchNetwork();
+  const { connect, isLoading, isError } = useConnect({ connector });
   const { isConnected, address: walletAddress } = useAccount();
   
   const [ walletBalance, setWalletBalance ] = useState({
@@ -46,6 +48,16 @@ export default function Header() {
     await disconnect();
     setWagmiConnected(false);
     toast.warning('Disconnecting from MetaMask...', { autoClose: 1000 });
+  };
+
+  const handleNetworkSwitch = async (newChainId) => {
+    try {
+      await switchNetworkAsync?.(newChainId);
+      navigate('/claim', { replace: true });
+    } catch(err) {
+      console.error(err.message);
+      toast.error(err.message.split('\n')[0], { autoClose: 4000 });
+    }
   };
 
   useEffect(() => {
@@ -113,41 +125,46 @@ export default function Header() {
                     src={`https://www.gravatar.com/avatar/${md5(walletAddress)}/?d=identicon`}
                     alt="chain-address-logo"
                   />
-                  <span>{truncate(walletAddress, 8)}</span>
+                  <span>{truncate(walletAddress, 12)}</span>
                 </NavLink>
 
                 <br />
 
-                <span className="fw-bold mx-1">
-                  {Number(walletBalance.formatted).toFixed(1)}
-                </span>
-                <span className="fw-bold mx-1">
-                  {walletBalance.symbol}
-                </span>
+                <div className="d-flex justify-content-end mt-2">
+                  <span className="fw-bold mx-1">
+                    {Number(walletBalance.formatted).toFixed(1)}
+                  </span>
+                  <span className="fw-bold mx-1">
+                    {walletBalance.symbol}
+                  </span>
 
-                <span className="ps-2">|</span>
+                  <span className="px-3">|</span>
 
-                {chains.map((newChain) => {
-                  return newChain.id !== chain?.id && (
-                    <span className="network-icon ms-3" 
-                      key={newChain.id} 
-                      onClick={() => switchNetwork?.(newChain.id)} 
-                      title={`Switch to ${newChain.name}`}>
-                        <NetworkSwitch />
-                    </span>
-                  );
-                })}
+                  {chains.map((newChain) => {
+                    return newChain.id !== chain?.id && (
+                      <span key={newChain.id}>
+                        <span className="me-2">{chain?.name}</span>
 
-                <span className="logout-icon ms-3" 
-                  onClick={handleDisconnect} 
-                  title="Disconnect from MetaMask">
-                    <Disconnect />
-                </span>
+                        <span className="network-icon" 
+                          onClick={() => handleNetworkSwitch(newChain.id)} 
+                          title={`Switch to ${newChain.name}`}>
+                            <NetworkSwitch />
+                        </span>
+                      </span>
+                    );
+                  })}
+
+                  <span className="logout-icon" 
+                    onClick={handleDisconnect} 
+                    title="Disconnect from MetaMask">
+                      <Disconnect />
+                  </span>
+                </div>
               </div>
             ) : (
               <Button 
                 onClick={handleConnect} 
-                loading={isLoading} 
+                loading={isLoading || isError} 
                 loadingText="Connecting...">
                   Connect
               </Button>

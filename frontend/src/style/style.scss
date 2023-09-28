@@ -11,9 +11,21 @@
   border-radius: 50%;
 }
 
+.network-icon {
+  margin: 0 6px;
+}
+
+.logout-icon {
+  margin: 0 0 0 6px;
+}
+
 .network-icon,
 .logout-icon {
+  display: inline-block;
   color: $secondary;
+  width: 20px;
+  height: 20px;
+  padding: 0;
 }
 
 .network-icon:hover,

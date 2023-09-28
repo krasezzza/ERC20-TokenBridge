@@ -53,7 +53,7 @@ class BridgeService {
       return lockAmountReceipt.status === 1;
     } catch (err) {
 
-      throw new Error(err.message.split('(')[0]);
+      throw new Error(err.message);
     }
   }
 
@@ -73,7 +73,7 @@ class BridgeService {
       return burnAmountReceipt.status === 1;
     } catch (err) {
 
-      throw new Error(err.message.split('(')[0]);
+      throw new Error(err.message);
     }
   }
 
@@ -89,7 +89,7 @@ class BridgeService {
       return unlockAmountReceipt.status === 1;
     } catch (err) {
 
-      throw new Error(err.message.split('(')[0]);
+      throw new Error(err.message);
     }
   }
 
@@ -105,7 +105,7 @@ class BridgeService {
       return mintAmountReceipt.status === 1;
     } catch (err) {
 
-      throw new Error(err.message.split('(')[0]);
+      throw new Error(err.message);
     }
   }
 
@@ -180,12 +180,7 @@ class BridgeService {
     );
 
     if (this._network === 'sepolia') {
-      await txValidator.validateLockTransaction(
-        data.tokenAmount, 
-        data.tokenSymbol, 
-        signerAddress, 
-        bridgeAddress
-      );
+      await txValidator.validateLockTransaction(data.tokenAmount, signerAddress, bridgeAddress);
       const chainTokenAddress = networkProps(this._network).tokenAddress;
       successResponse = await this._lockAmount({
         tokenAddress: chainTokenAddress,
@@ -195,15 +190,11 @@ class BridgeService {
         s: signedData.s,
         v: signedData.v
       });
-      await txValidator.logBalanceAfterTransaction(data.tokenSymbol, signerAddress, bridgeAddress);
+      await txValidator.logBalanceAfterTransaction(null, bridgeAddress);
     }
 
     if (this._network === 'goerli') {
-      await txValidator.validateBurnTransaction(
-        data.tokenAmount, 
-        data.tokenSymbol, 
-        signerAddress
-      );
+      await txValidator.validateBurnTransaction(data.tokenAmount, signerAddress);
       const chainTokenAddress = networkProps(this._network).tokenAddress;
       successResponse = await this._burnAmount({
         tokenAddress: chainTokenAddress,
@@ -213,7 +204,7 @@ class BridgeService {
         s: signedData.s,
         v: signedData.v
       });
-      await txValidator.logBalanceAfterTransaction(data.tokenSymbol, signerAddress);
+      await txValidator.logBalanceAfterTransaction(signerAddress);
     }
 
     if (successResponse) {
@@ -232,32 +223,23 @@ class BridgeService {
     const bridgeAddress = networkProps(this._network).bridgeAddress;
 
     if (this._network === 'sepolia') {
-      await txValidator.validateUnlockTransaction(
-        data.tokenAmount, 
-        data.tokenSymbol, 
-        signerAddress, 
-        bridgeAddress
-      );
+      await txValidator.validateUnlockTransaction(data.tokenAmount, signerAddress, bridgeAddress);
       const chainTokenAddress = networkProps(this._network).tokenAddress;
       successResponse = await this._unlockAmount({
         tokenAddress: chainTokenAddress,
         tokenAmount: tokenAmountFormatted
       });
-      await txValidator.logBalanceAfterTransaction(data.tokenSymbol, signerAddress, bridgeAddress);
+      await txValidator.logBalanceAfterTransaction(null, bridgeAddress);
     }
 
     if (this._network === 'goerli') {
-      await txValidator.validateMintTransaction(
-        data.tokenAmount, 
-        data.tokenSymbol, 
-        signerAddress
-      );
+      await txValidator.validateMintTransaction(data.tokenAmount, signerAddress);
       const chainTokenAddress = networkProps(this._network).tokenAddress;
       successResponse = await this._mintAmount({
         tokenAddress: chainTokenAddress,
         tokenAmount: tokenAmountFormatted
       });
-      await txValidator.logBalanceAfterTransaction(data.tokenSymbol, signerAddress);
+      await txValidator.logBalanceAfterTransaction(signerAddress);
     }
 
     if (successResponse) {

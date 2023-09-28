@@ -13,7 +13,6 @@ import ItemsPagination from "../components/gui/ItemsPagination";
 export default function History() {
 
   const { chain } = useNetwork();
-
   const [isLoading, setIsLoading] = useState(false);
   const [transferRecords, setTransferRecords] = useState([]);
   const [currentPageItems, setCurrentPageItems] = useState([]);
@@ -22,7 +21,7 @@ export default function History() {
     const fetchData = async () => {
       setIsLoading(true);
 
-      const bridgeService = new BridgeService(chain.network);
+      const bridgeService = new BridgeService(chain?.network);
 
       await bridgeService.fetchClaimedRecords().then((results) => {
         setTransferRecords([...results]);
@@ -36,24 +35,24 @@ export default function History() {
 
     fetchData();
     // eslint-disable-next-line
-  }, [chain]);
+  }, [chain, transferRecords.length]);
 
   const handleCallback = (items) => {
     setCurrentPageItems(items);
   };
 
   return (
-    <div className="container pt-8">
-      <h1 className="text-center">Transaction History</h1>
+    <div className="container pt-6">
+      <h1 className="text-center">My Transactions</h1>
 
       {isLoading ? (<Loading />) : (
         <div className="content-wrapper">
           <Table className="w-75 mx-auto mt-6 mb-3" responsive="sm" hover={true} striped>
             <thead>
               <tr className="text-center">
+                <th>Token</th>
                 <th>Source</th>
                 <th>Target</th>
-                <th>Token</th>
               </tr>
             </thead>
 
@@ -61,6 +60,12 @@ export default function History() {
               {currentPageItems.length ? (
                 currentPageItems.map(transfer => (
                   <tr className="text-center align-middle" key={transfer.id}>
+                    <td>
+                      <span>{transfer.tokenAmount} {transfer.tokenSymbol}</span>
+                      <br />
+                      <span>{truncate(transfer.tokenAddress, 9)}</span>
+                    </td>
+
                     <td>
                       <span>{capitalize(transfer.fromNetwork)}</span>
                       <br />
@@ -71,12 +76,6 @@ export default function History() {
                       <span>{capitalize(transfer.toNetwork)}</span>
                       <br />
                       <span>{truncate(transfer.toWallet, 9)}</span>
-                    </td>
-
-                    <td>
-                      <span>{transfer.tokenAmount} {transfer.tokenSymbol}</span>
-                      <br />
-                      <span>{truncate(transfer.tokenAddress, 9)}</span>
                     </td>
                   </tr>
                 ))

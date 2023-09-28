@@ -23,60 +23,63 @@ class ValidationService {
     return formatEther(balance);
   };
 
-  async logBalanceAfterTransaction(tokenSymbol, signerAddress, bridgeAddress = null) {
-    const signerBalance = await this._getCurrentChainBalance(signerAddress);
-    console.log(`SIGNER balance after transaction: ${signerBalance} ${tokenSymbol}`);
+  async logBalanceAfterTransaction(signerAddress = null, bridgeAddress = null) {
+    if (signerAddress) {
+      const signerBalance = await this._getCurrentChainBalance(signerAddress);
+      console.log(`SIGNER balance after transaction: ${Number(signerBalance)}`);
+    }
 
     if (bridgeAddress) {
       const bridgeBalance = await this._getCurrentChainBalance(bridgeAddress);
-      console.log(`BRIDGE balance after transaction: ${bridgeBalance} ${tokenSymbol}`);
+      console.log(`BRIDGE balance after transaction: ${Number(bridgeBalance)}`);
     }
+
+    console.log("<==================================>");
   }
 
-  async validateLockTransaction(tokenAmount, tokenSymbol, signerAddress, bridgeAddress) {
-    console.log(`LockAmount (${tokenAmount} ${tokenSymbol}) on SEPOLIA...`);
+  async validateLockTransaction(tokenAmount, signerAddress, bridgeAddress) {
+    console.log("<==================================>");
+    console.log(`LOCK tokens (${Number(tokenAmount)}) on SEPOLIA...`);
 
     const signerBalance = await this._getCurrentChainBalance(signerAddress);
-    console.log(`SIGNER balance before transaction: ${signerBalance} ${tokenSymbol}`);
-
-    if (tokenAmount > signerBalance) {
-      throw new Error("The given amount exceeds the wallet balance!");
+    if (Number(tokenAmount) > Number(signerBalance)) {
+      throw new Error("The given tokens exceeds the wallet balance!");
     }
     
     const bridgeBalance = await this._getCurrentChainBalance(bridgeAddress);
-    console.log(`BRIDGE balance before transaction: ${bridgeBalance} ${tokenSymbol}`);
+    console.log(`BRIDGE balance before transaction: ${Number(bridgeBalance)}`);
   }
 
-  async validateBurnTransaction(tokenAmount, tokenSymbol, signerAddress) {
-    console.log(`BurnAmount (${tokenAmount} ${tokenSymbol}) on GOERLI...`);
+  async validateBurnTransaction(tokenAmount, signerAddress) {
+    console.log("<==================================>");
+    console.log(`BURN tokens (${Number(tokenAmount)}) on GOERLI...`);
 
     const signerBalance = await this._getCurrentChainBalance(signerAddress);
-    console.log(`SIGNER balance before transaction: ${signerBalance} ${tokenSymbol}`);
+    console.log(`SIGNER balance before transaction: ${Number(signerBalance)}`);
 
-    if (tokenAmount > signerBalance) {
-      throw new Error("The given amount exceeds the wallet balance!");
+    if (Number(tokenAmount) > Number(signerBalance)) {
+      throw new Error("The given tokens exceeds the wallet balance!");
     }
   }
 
-  async validateUnlockTransaction(tokenAmount, tokenSymbol, signerAddress, bridgeAddress) {
-    console.log(`UnlockAmount (${tokenAmount} ${tokenSymbol}) on SEPOLIA...`);
-
-    const signerBalance = await this._getCurrentChainBalance(signerAddress);
-    console.log(`SIGNER balance before transaction: ${signerBalance} ${tokenSymbol}`);
+  async validateUnlockTransaction(tokenAmount, signerAddress, bridgeAddress) {
+    console.log("<==================================>");
+    console.log(`UNLOCK tokens (${Number(tokenAmount)}) on SEPOLIA...`);
 
     const bridgeBalance = await this._getCurrentChainBalance(bridgeAddress);
-    console.log(`BRIDGE balance before transaction: ${bridgeBalance} ${tokenSymbol}`);
+    console.log(`BRIDGE balance before transaction: ${Number(bridgeBalance)}`);
 
-    if (tokenAmount > bridgeBalance) {
-      throw new Error("The given amount exceeds the bridge balance!");
+    if (Number(tokenAmount) > Number(bridgeBalance)) {
+      throw new Error("The given tokens exceeds the bridge balance!");
     }
   }
 
-  async validateMintTransaction(tokenAmount, tokenSymbol, signerAddress) {
-    console.log(`MintAmount (${tokenAmount} ${tokenSymbol}) on GOERLI...`);
+  async validateMintTransaction(tokenAmount, signerAddress) {
+    console.log("<==================================>");
+    console.log(`MINT tokens (${Number(tokenAmount)}) on GOERLI...`);
 
     const signerBalance = await this._getCurrentChainBalance(signerAddress);
-    console.log(`SIGNER balance before transaction: ${signerBalance} ${tokenSymbol}`);
+    console.log(`SIGNER balance before transaction: ${Number(signerBalance)}`);
   }
 }
 
