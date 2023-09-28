@@ -2,23 +2,23 @@ import { Signature } from "ethers";
 
 const PermitService = {
 
-  signPermit: async (owner, spender, value, tokenContract, provider, deadline) => {
+  signPermit: async (owner, spender, value, contract, provider, deadline) => {
 
     try {
-      const nonce = await tokenContract.nonces(owner);
+      const nonce = await contract.nonces(owner);
       const EIP712Domain = [
         { name: "name", type: "string" },
         { name: "version", type: "string" },
         { name: "chainId", type: "uint256" },
         { name: "verifyingContract", type: "address" }
       ];
-      const tokenName = await tokenContract.name();
+      const tokenName = await contract.name();
       const network = await provider.getNetwork();
       const domain = {
         name: tokenName,
         version: "1",
         chainId: network.chainId.toString(),
-        verifyingContract: tokenContract.target
+        verifyingContract: contract.target
       };
       const Permit = [
         { name: "owner", type: "address" },

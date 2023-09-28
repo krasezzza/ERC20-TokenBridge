@@ -23,23 +23,14 @@ npm run bc-compile
 # run the smart contract coverage
 npm run bc-coverage
 
+# deploy contracts on the localhost
+npm run bc-deploy-local
 
-# deployment tasks
-cd blockchain
+# deploy contracts on the sepolia
+npm run bc-deploy-sepolia
 
-npx hardhat deploy-bridge --network {network}
-npx hardhat deploy-token --network {network} --bridge-address {address} --initial-amount {amount} --token-name {name} --token-symbol {symbol}
-
-# examples for localhost
-npx hardhat deploy-local
-
-# examples for sepolia
-npx hardhat deploy-bridge --network sepolia
-npx hardhat deploy-token --network sepolia --bridge-address 0x5C8b829ccF7cFA5aB9329984bb1bEac9ed444897 --initial-amount 110000000000000000000 --token-name KrasiToken --token-symbol KRT
-
-# examples for goerli
-npx hardhat deploy-bridge --network goerli
-npx hardhat deploy-token --network goerli --bridge-address 0x1D728166aE0E5bcc5Ef59BCE4473830EA7bb97A8 --initial-amount 1000000000000000000 --token-name WrappedKrasiToken --token-symbol WKRT
+# deploy contracts on the goerli
+npm run bc-deploy-goerli
 ```
 
 Please create a ***blockchain/.env*** file as a copy of the ***blockchain/.env.example*** and populate your keys in order to use the deployment task for the testnet correctly.

@@ -5,13 +5,15 @@
   "author": "Krasimir Tsvetanov",
   "license": "ISC",
   "scripts": {
+    "bc-deploy-sepolia": "npm run deploy-sepolia --prefix blockchain",
+    "bc-deploy-goerli": "npm run deploy-goerli --prefix blockchain",
     "bc-deploy-local": "npm run deploy-local --prefix blockchain",
     "bc-coverage": "npm run coverage --prefix blockchain",
     "bc-compile": "npm run compile --prefix blockchain",
     "bc-start": "npm run start --prefix blockchain",
     "bc-test": "npm run test --prefix blockchain",
     "fe-start": "npm start --prefix frontend",
-    "dev": "concurrently --kill-others-on-fail 'npm run bc-start' 'sleep 6 && npm run bc-deploy-local' 'sleep 12 && npm run fe-start'"
+    "dev": "concurrently --kill-others-on-fail 'npm run bc-start' 'sleep 5 && npm run bc-deploy-local' 'sleep 15 && npm run fe-start'"
   },
   "dependencies": {
     "concurrently": "^8.2.1"

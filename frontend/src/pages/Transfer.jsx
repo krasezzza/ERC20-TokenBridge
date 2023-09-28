@@ -143,70 +143,72 @@ export default function Transfer() {
   }, [chainBridge]);
 
   return (
-    <div className="container my-6 py-3">
+    <div className="container pt-8">
       <h1 className="text-center">Token Transfer</h1>
 
-      <Form className="w-75 mx-auto my-6">
-        <Form.Group className="py-3">
-          <Form.Label>Network to bridge to:</Form.Label>
+      <div className="content-wrapper">
+        <Form className="w-75 mx-auto my-6">
+          <Form.Group className="py-3">
+            <Form.Label>Network to bridge to:</Form.Label>
 
-          <Form.Select 
-            name="networkName" 
-            value={chainBridge.networkName} 
-            onChange={handleInputChange}>
-
-            <option value="">Select Network</option>
-            <option value="sepolia" disabled={chain?.network === "sepolia"}>Sepolia</option>
-            <option value="goerli" disabled={chain?.network === "goerli"}>Goerli</option>
-
-          </Form.Select>
-        </Form.Group>
-
-        <Form.Group className="py-3">
-          <Form.Label>Token address:</Form.Label>
-
-          {canInputAddress(chainBridge.tokenAddress) ? (
-            <Form.Control 
-              type="text" 
-              name="tokenAddress" 
-              value={chainBridge.tokenAddress} 
-              placeholder="Enter Address" 
-              onChange={handleInputChange} />
-          ) : (
             <Form.Select 
-              name="tokenAddress" 
-              value={chainBridge.tokenAddress} 
+              name="networkName" 
+              value={chainBridge.networkName} 
               onChange={handleInputChange}>
 
-              <option value="0x0">Select Address</option>
-              <option value={token.address}>[{token.name}] {token.address}</option>
-              <option value="">Other</option>
+              <option value="">Select Network</option>
+              <option value="sepolia" disabled={chain?.network === "sepolia"}>Sepolia</option>
+              <option value="goerli" disabled={chain?.network === "goerli"}>Goerli</option>
 
             </Form.Select>
-          )}
-        </Form.Group>
+          </Form.Group>
 
-        <Form.Group className="py-3">
-          <Form.Label>Choose amount:</Form.Label>
+          <Form.Group className="py-3">
+            <Form.Label>Token address:</Form.Label>
 
-          <Form.Control 
-            type="number" min="0" 
-            name="tokenAmount" 
-            value={chainBridge.tokenAmount} 
-            placeholder="Enter Amount" 
-            onChange={handleInputChange} />
-        </Form.Group>
+            {canInputAddress(chainBridge.tokenAddress) ? (
+              <Form.Control 
+                type="text" 
+                name="tokenAddress" 
+                value={chainBridge.tokenAddress} 
+                placeholder="Enter Address" 
+                onChange={handleInputChange} />
+            ) : (
+              <Form.Select 
+                name="tokenAddress" 
+                value={chainBridge.tokenAddress} 
+                onChange={handleInputChange}>
 
-        <div className="d-flex justify-content-center align-items-center py-6">
-          <Button 
-            className="mx-6" 
-            variant="primary" 
-            disabled={!isFormValid} 
-            onClick={handleShowModal}>
-              Submit
-          </Button>
-        </div>
-      </Form>
+                <option value="0x0">Select Address</option>
+                <option value={token.address}>[{token.name}] {token.address}</option>
+                <option value="">Other</option>
+
+              </Form.Select>
+            )}
+          </Form.Group>
+
+          <Form.Group className="py-3">
+            <Form.Label>Choose amount:</Form.Label>
+
+            <Form.Control 
+              type="number" min="0" 
+              name="tokenAmount" 
+              value={chainBridge.tokenAmount} 
+              placeholder="Enter Amount" 
+              onChange={handleInputChange} />
+          </Form.Group>
+
+          <div className="d-flex justify-content-center align-items-center py-6">
+            <Button 
+              className="mx-6" 
+              variant="primary" 
+              disabled={!isFormValid} 
+              onClick={handleShowModal}>
+                Submit
+            </Button>
+          </div>
+        </Form>
+      </div>
 
       <Modal show={showModal} onHide={handleCloseModal} backdrop="static">
         <Modal.Header>

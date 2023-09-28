@@ -98,11 +98,11 @@ export default function Claim() {
   };
 
   return (
-    <div className="container my-6 py-3">
+    <div className="container pt-8">
       <h1 className="text-center">Token Claim</h1>
 
       {isLoading ? (<Loading />) : (
-        <div className="wrapper">
+        <div className="content-wrapper">
           <Table className="w-75 mx-auto mt-6 mb-3" responsive="sm" hover={true} striped>
             <thead>
               <tr className="text-center">

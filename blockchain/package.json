@@ -6,7 +6,9 @@
     "start": "npx hardhat node",
     "compile": "npx hardhat compile",
     "coverage": "npx hardhat coverage",
-    "deploy-local": "npx hardhat deploy-local"
+    "deploy-local": "npx hardhat compile && npx hardhat deploy-local",
+    "deploy-goerli": "npx hardhat compile && npx hardhat deploy-goerli --network goerli",
+    "deploy-sepolia": "npx hardhat compile && npx hardhat deploy-sepolia --network sepolia"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",

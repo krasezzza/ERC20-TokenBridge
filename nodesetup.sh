@@ -130,7 +130,7 @@ npm install --prefix blockchain
 echo ""
 sleep 2
 
-echo "Compiling the typechain data..."
+echo "Compiling contracts regarding ABI..."
 npm run bc-compile
 echo ""
 sleep 2

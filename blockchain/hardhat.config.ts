@@ -1,4 +1,4 @@
-import { HardhatUserConfig, task, subtask } from "hardhat/config";
+import { HardhatUserConfig, task, subtask, types } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import 'dotenv/config';
 
@@ -8,6 +8,7 @@ const lazyImport = async (module: any) => {
 
 task("deploy-local", "Deploys both contracts on a localhost network")
   .setAction(async ({ }, hre) => {
+    console.log(`Start deploy process on Hardhat chain...`);
 
     const { main } = await lazyImport("./scripts/deploy-local");
 
@@ -28,17 +29,18 @@ task("deploy-local", "Deploys both contracts on a localhost network")
     });
   });
 
-task("deploy-bridge", "Deploys TokenBridge contract on the given network")
-  .setAction(async ({ }, hre) => {
+task("deploy-sepolia", "Deploys both contracts on the Sepolia network")
+  .setAction(async ({}, hre) => {
+    console.log(`Start deploy process on Sepolia chain...`);
 
-    const { main } = await lazyImport("./scripts/deploy-bridge");
+    const { main } = await lazyImport("./scripts/deploy-sepolia");
 
     const privateKey = process.env.DEPLOYER_PRIVATE_KEY;
 
     await main(privateKey).then((args: any) => {
       hre.run("print", {
         type: 'success',
-        text: `Bridge Address: ${args.bridgeAddress}`
+        text: `Bridge Address: ${args.bridgeAddress}\nToken Address: ${args.tokenAddress}\nToken Owner: ${args.tokenOwner}`
       });
 
       process.exitCode = 0;
@@ -52,31 +54,18 @@ task("deploy-bridge", "Deploys TokenBridge contract on the given network")
     });
   });
 
-task("deploy-token", "Deploys WERC20 contract on the given network")
-  .addParam("bridgeAddress", "Bridge address to be set as an owner")
-  .addParam("initialAmount", "Initial amount of the token to be minted")
-  .addParam("tokenName", "Token name to be set")
-  .addParam("tokenSymbol", "Token symbol to be set")
-  .setAction(async (taskArgs, hre) => {
+task("deploy-goerli", "Deploys both contracts on the Goerli network")
+  .setAction(async ({}, hre) => {
+    console.log(`Start deploy process on Goerli chain...`);
 
-    const { main } = await lazyImport("./scripts/deploy-token");
+    const { main } = await lazyImport("./scripts/deploy-goerli");
 
     const privateKey = process.env.DEPLOYER_PRIVATE_KEY;
-    const bridgeAddress = taskArgs.bridgeAddress;
-    const initialAmount = taskArgs.initialAmount;
-    const tokenName = taskArgs.tokenName;
-    const tokenSymbol = taskArgs.tokenSymbol;
 
-    await main(
-      privateKey,
-      bridgeAddress,
-      initialAmount,
-      tokenName,
-      tokenSymbol
-    ).then((args: any) => {
+    await main(privateKey).then((args: any) => {
       hre.run("print", {
         type: 'success',
-        text: `Token Address: ${args.tokenAddress}\nToken Owner: ${args.tokenOwner}`
+        text: `Bridge Address: ${args.bridgeAddress}\nToken Address: ${args.tokenAddress}\nToken Owner: ${args.tokenOwner}`
       });
 
       process.exitCode = 0;
