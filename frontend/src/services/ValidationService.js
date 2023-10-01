@@ -43,7 +43,7 @@ class ValidationService {
 
     const signerBalance = await this._getCurrentChainBalance(signerAddress);
     if (Number(tokenAmount) > Number(signerBalance)) {
-      throw new Error("The given tokens exceeds the wallet balance!");
+      throw new Error("The given amount exceeds the wallet balance!");
     }
     
     const bridgeBalance = await this._getCurrentChainBalance(bridgeAddress);
@@ -58,7 +58,7 @@ class ValidationService {
     console.log(`SIGNER balance before transaction: ${Number(signerBalance)}`);
 
     if (Number(tokenAmount) > Number(signerBalance)) {
-      throw new Error("The given tokens exceeds the wallet balance!");
+      throw new Error("The given amount exceeds the wallet balance!");
     }
   }
 
@@ -70,7 +70,7 @@ class ValidationService {
     console.log(`BRIDGE balance before transaction: ${Number(bridgeBalance)}`);
 
     if (Number(tokenAmount) > Number(bridgeBalance)) {
-      throw new Error("The given tokens exceeds the bridge balance!");
+      throw new Error("The given amount exceeds the bridge balance!");
     }
   }
 
