@@ -119,16 +119,22 @@ export default function Header() {
           <div className="d-flex">
             {wagmiConnected && !!walletAddress ? (
               <div className="d-block text-end">
-                <NavLink to="/history">
-                  <img
-                    className="img-profile me-3"
-                    src={`https://www.gravatar.com/avatar/${md5(walletAddress)}/?d=identicon`}
-                    alt="chain-address-logo"
-                  />
-                  <span>{truncate(walletAddress, 12)}</span>
-                </NavLink>
+                <div className="d-flex justify-content-end">
+                  <NavLink to="/history">
+                    <img
+                      className="img-profile me-3"
+                      src={`https://www.gravatar.com/avatar/${md5(walletAddress)}/?d=identicon`}
+                      alt="chain-address-logo"
+                    />
+                    <span>{truncate(walletAddress, 6)}</span>
+                  </NavLink>
 
-                <br />
+                  <span className="logout-icon ms-3" 
+                    onClick={handleDisconnect} 
+                    title="Disconnect from MetaMask">
+                      <Disconnect />
+                  </span>
+                </div>
 
                 <div className="d-flex justify-content-end mt-2">
                   <span className="fw-bold mx-1">
@@ -143,9 +149,9 @@ export default function Header() {
                   {chains.map((newChain) => {
                     return newChain.id !== chain?.id && (
                       <span key={newChain.id}>
-                        <span className="me-2">{chain?.name}</span>
+                        <span>{chain?.name}</span>
 
-                        <span className="network-icon" 
+                        <span className="network-icon ms-3" 
                           onClick={() => handleNetworkSwitch(newChain.id)} 
                           title={`Switch to ${newChain.name}`}>
                             <NetworkSwitch />
@@ -153,12 +159,6 @@ export default function Header() {
                       </span>
                     );
                   })}
-
-                  <span className="logout-icon" 
-                    onClick={handleDisconnect} 
-                    title="Disconnect from MetaMask">
-                      <Disconnect />
-                  </span>
                 </div>
               </div>
             ) : (
