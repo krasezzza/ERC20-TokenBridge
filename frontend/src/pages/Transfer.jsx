@@ -40,15 +40,15 @@ export default function Transfer() {
   });
 
   useEffect(() => {
-    const getTokenData = async () => {
+    // use self-invoked function
+    (async () => {
       if (!!chain?.network) {
         const tokenData = await fetchToken({
           address: networkProps(chain.network).tokenAddress,
         });
         setToken(tokenData);
       }
-    };
-    getTokenData();
+    })();
   }, [chain]);
 
   const handleShowModal = () => {
@@ -133,14 +133,17 @@ export default function Transfer() {
   };
 
   useEffect(() => {
-    const checkFormValidation = async () => {
+    // use self-invoked function
+    (async () => {
       const isValidNetwork = !!chainBridge.networkName;
       const isTokenAddress = await checkTokenAddress(chainBridge.tokenAddress);
-      const isValidAmount = !!parseInt(chainBridge.tokenAmount);
+      const isValidAmount = () => {
+        const amount = parseInt(chainBridge.tokenAmount);
+        return !!amount && amount > 0;
+      };
   
       setIsFormValid(isValidNetwork && isTokenAddress && isValidAmount);
-    };
-    checkFormValidation();
+    })();
   }, [chainBridge]);
 
   return (

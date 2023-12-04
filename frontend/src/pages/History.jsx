@@ -18,7 +18,8 @@ export default function History() {
   const [currentPageItems, setCurrentPageItems] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    // use self-invoked function
+    (async () => {
       setIsLoading(true);
 
       const bridgeService = new BridgeService(chain?.network);
@@ -31,9 +32,7 @@ export default function History() {
       });
 
       setIsLoading(false);
-    };
-
-    fetchData();
+    })();
     // eslint-disable-next-line
   }, [chain, transferRecords.length]);
 

@@ -28,7 +28,7 @@ export default function Header() {
   const location = useLocation();
   const { chain } = useNetwork();
   const { chains, switchNetworkAsync } = useSwitchNetwork();
-  const { connect, isLoading, isError } = useConnect({ connector });
+  const { connect, isLoading } = useConnect({ connector });
   const { isConnected, address: walletAddress } = useAccount();
   
   const [ walletBalance, setWalletBalance ] = useState({
@@ -77,7 +77,8 @@ export default function Header() {
   }, [chain?.id, walletAddress, location]);
 
   useEffect(() => {
-    const manageConnection = async () => {
+    // use self-invoked function
+    (async () => {
       if (wagmiConnected) {
         try {
           connect();
@@ -86,8 +87,7 @@ export default function Header() {
           toast.error(err.message, { autoClose: 4000 });
         }
       }
-    };
-    manageConnection();
+    })();
     // eslint-disable-next-line
   }, [wagmiConnected]);
 
@@ -164,7 +164,7 @@ export default function Header() {
             ) : (
               <Button 
                 onClick={handleConnect} 
-                loading={isLoading || isError} 
+                loading={isLoading} 
                 loadingText="Connecting...">
                   Connect
               </Button>
